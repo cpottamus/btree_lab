@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "global.h"
 #include "block.h"
@@ -42,26 +43,27 @@ enum BTreeOp {BTREE_OP_INSERT, BTREE_OP_DELETE, BTREE_OP_UPDATE,BTREE_OP_LOOKUP}
 enum BTreeDisplayType {BTREE_DEPTH, BTREE_DEPTH_DOT, BTREE_SORTED_KEYVAL};
 
 class BTreeIndex {
- private:
+private:
   BufferCache *buffercache;
   SIZE_T       superblock_index;
   BTreeNode    superblock;
+  unsigned int maxKeyNum;
 
- protected:
+protected:
 
   ERROR_T      AllocateNode(SIZE_T &node);
 
   ERROR_T      DeallocateNode(const SIZE_T &node);
 
   ERROR_T      LookupOrUpdateInternal(const SIZE_T &Node,
-				      const BTreeOp op, 
-				      const KEY_T &key,
-				      VALUE_T &val);
+    const BTreeOp op, 
+    const KEY_T &key,
+    VALUE_T &val);
   
 
   ERROR_T      DisplayInternal(const SIZE_T &node,
-			       ostream &o, 
-			       const BTreeDisplayType display_type=BTREE_DEPTH) const;
+    ostream &o, 
+    const BTreeDisplayType display_type=BTREE_DEPTH) const;
 public:
   //
   // keysize and valueszie should be stored in the 
@@ -74,8 +76,8 @@ public:
   // will be zero and will be read when Attach(initialblock,false) is 
   // invoked
   BTreeIndex(SIZE_T keysize, 
-	     SIZE_T valuesize,
-	     BufferCache *cache,
+    SIZE_T valuesize,
+    BufferCache *cache,
 	     bool unique=true);   // true if a  key maps to a single value
 
 
@@ -138,6 +140,13 @@ public:
   ERROR_T Display(ostream &o, BTreeDisplayType display_type=BTREE_DEPTH) const;
   
   ostream & Print(ostream &os) const;
+
+  //This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
+  ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath);
+
+//Rebalance takes a path of pointers and a node at the bottom of that path. It will split the node and recursively walk up the parent path
+// guaranteeing the sanity of each parent.
+  ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath);
   
 };
 

@@ -241,16 +241,16 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
 	  // BTREE_OP_UPDATE 
       return b.SetVal(offest, value);
 	  // WRITE ME
-       return ERROR_UNIMPL;
-     }
-   }
- }
- return ERROR_NONEXISTENT;
- break;
- default:
+      return ERROR_UNIMPL;
+    }
+  }
+}
+return ERROR_NONEXISTENT;
+break;
+default:
     // We can't be looking at anything other than a root, internal, or leaf
- return ERROR_INSANE;
- break;
+return ERROR_INSANE;
+break;
 }  
 
 return ERROR_INSANE;
@@ -366,11 +366,147 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
 
   //======ALGORITHM======
 
-  //Lookup key
+  //Lookup and attempt to update key
+  ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, value);
+
+  switch(retCode) {
+    //If there is no error in the update call, end function, declare update successful.
+    case ERROR_NOERROR:
+    std::cout << "Key already existed, value updated."<<std::endl;
+    return ERROR_NOERROR;
+    //If the key doesn't exist (as expected), begin insert functionality
+    case ERROR_NONEXISTENT:
+      //traverse to find the leaf
+      //Use a stack of pointers to track the path down to the node where the key would go.
+    
+    BTreeNode leafNode;
+    ERROR_T rc;
+    SIZE_T leafPtr;
+    if(leafNode.info.numkeys==0){
+
+      //TODO:: ALLOCATE BLOCKS
+      AllocateNode(leafPtr);
+      rc = leafNode.Unserialize(buffercache, leafPtr);
+      leafNode.SetKey(0, key);
+      leafNode.SetVal(0, value);
+    }else{
+      std::vector<SIZE_T> pointerPath;
+      LookupLeaf(superblock.info.rootnode, &key, &pointerPath);
+    //Get the node from the last pointer (which points to the leaf node that the key belongs on)
+      leafPtr = pointerPath.pop_back();
+      KEY_T testkey;
+      KEY_T keySpot;
+      VALUE_T valSpot;
+      rc = leafNode.Unserialize(buffercache, leafPtr);
+
+      //Walk the leaf node
+      for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
+        rc = leafNode.GetKey(offset, testkey);
+        if (rc) { return rc;}
+        if(testkey>key){
+        //Once you've found the spot the key needs to go, move all other keys over by 1
+          for(SIZE_T offset2 = leafNode.info.numkeys-1; offset2 >= offset; offset2--){
+          //Grab the old key and value
+            rc = leafNode.GetKey(offset2, keySpot);
+            if (rc) { return rc;}
+            rc = leafNode.GetVal(offset2, valSpot);
+            if (rc) { return rc;}
+         //move it up by 1
+            rc = leafNode.SetKey(offset2+1, keySpot);
+            if (rc) { return rc;}
+            rc = leafNode.SetVal(offset2+1, valSpot);
+            if (rc) { return rc;}
+
+           //Increment the key count for the given node.
+            leafNode.info.numkeys++;
+          }
+        //assign the new key to offset
+          rc = leafNode.SetKey(offset, key);
+          if (rc) { return rc;}
+          rc = leafNode.SetVal(offset, value);
+          if (rc) { return rc;}
+
+          break;
+        }
+      }
+
+     //Re-serialize after the access and write. 
+      leafNode.Serialize(buffercache, leafPtr); 
+    //TODO Call Rebalance
+    //check if the node length is over 2/3, and call rebalance if necessary
+    }
+    //Re-serialize after the access and write. 
+    leafNode.Serialize(buffercache, leafPtr);
+
+
+    default:
+    std::cout << "Unexpected Error on look up. Please perform sanityCheck and diagnose issue."<<std::endl;
+    return ERROR_INSANE;
+  }
+
   //If it exists, call update on it with the new value
 
 
   return ERROR_UNIMPL;
+}
+
+//This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
+ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath){
+  BTreeNode b;
+  ERROR_T rc;
+  SIZE_T offset;
+  KEY_T testkey;
+  SIZE_T ptr;
+
+  rc = b.Unserialize(buffercache, node);
+
+  if(rc!=ERROR_NOERROR){
+    return rc;
+  }
+
+  switch(b.info.nodetype){
+    case BTREE_ROOT_NODE:
+    case BTREE_INTERIOR_NODE:
+      // Scan through key/ptr pairs
+      //and recurse if possible
+    for(offset=0; offeset<b.info.numkeys; offset++){
+      rc=b.GetKey(offset,testkey);
+      if(rc) { return rc; }
+      if(key<testkey){
+            // OK, so we now have the first key that's larger
+            // so we ned to recurse on the ptr immediately previous to 
+            // this one, if it exists
+        rc=b.GetPtr(offset,ptr);
+        if (rc) { return rc; }
+          //If there is no error on finding the appropriate pointer, push it onto our stack. 
+        pointerPath.push_back(ptr);
+        return LookupLeaf(ptr, key, pointerPath);
+      }
+    }
+
+      //if we get here, we need to go to the next pointer, if it exists.
+    if(b.info.numkeys>0){
+      rc=b.GetPtr(b.info.numkeys,ptr);
+      if (rc) { return rc; }
+        //If there is no error on finding the appropriate pointer, push it onto our stack. 
+      pointerPath.push_back(ptr);
+      return LookupLeaf(ptr, key, pointerPath);
+    } else {
+        // There are no keys at all on this node, so nowhere to go
+      return ERROR_NONEXISTENT;
+    }
+    break;
+    case BTREE_LEAF_NODE:
+    return ERROR_NOERROR;
+    break;
+    default:
+        // We can't be looking at anything other than a root, internal, or leaf
+    return ERROR_INSANE;
+    break;
+  }
+
+  return ERROR_INSANE;
+
 }
 
 ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
@@ -486,7 +622,7 @@ ERROR_T BTreeIndex::SanityCheck() const
   //make a list of all blocks listed as btree nodes. for use in 1
   //Walk each node, and make sure that they are within minLen/maxLen (what is too empty?), also check that keys are in order: 7,8.
   //If any pointers point to visited nodes, throw error, if any pointers point to freelist nodes, throw error. 4, 5, 2, 6.
-  
+
 
   //3 and 9 are currently unimplemented.
   //Consider incrementing key count as you walk each node, and comparing to superblock to check 9.
