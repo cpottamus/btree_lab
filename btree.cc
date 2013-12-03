@@ -412,7 +412,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
-        if(key<=testkey){
+        if(key < testkey || key == testkey){
         //Once you've found the spot the key needs to go, move all other keys over by 1
           for(SIZE_T offset2 = leafNode.info.numkeys-1; offset2 >= offset; offset2--){
           //Grab the old key and value
@@ -466,7 +466,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
   ERROR_T rc;
   SIZE_T offset;
   KEY_T testkey;
-  SIZE_T ptr;list
+  SIZE_T ptr;
 
   rc = b.Unserialize(buffercache, node);
 
@@ -479,7 +479,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     case BTREE_INTERIOR_NODE:
       // Scan through key/ptr pairs
       //and recurse if possible
-    for(offset=0; offset<b.info.numkeys; offset++){
+    for(offset=0;set<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
       if(key<testkey){
@@ -530,7 +530,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T offset;
   SIZE_T offset2;
   KEY_T testkey;
-  SIZE_T ptr;
+  //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}
 
@@ -554,7 +554,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Find splitting point
   int midpoint = b.info.numkeys/2;
   //Build lower node, include the splitting key (this is a <= B+ tree)
-  for(offset = 0; offset<= midpoint; offset++){
+  for(offset = 0; (int)offset <= midpoint; offset++){
     //Get old node values
     rc = b.GetKey(offset, keySpot);
     if (rc) { return rc;}
@@ -615,7 +615,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   for(offset = 0; offset<parentNode.info.numkeys; offset++){
         rc = parentNode.GetKey(offset, testKey);
         if(rc){ return rc;}
-        if(testKey>splitKey){
+        if(splitKey < testKey || splitKey == testKey){
 
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
           for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
@@ -644,16 +644,18 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Check the length of the node and call rebalance if necessary
   parentNode.Serialize(buffercache, parentPtr);
 
-  if(leafNode.info.numkeys > (int)(2*maxNumKeys/3)){
-    rc = Rebalance(parentNode, ptrPath);
+  if(parentNode.info.numkeys > (int)(2*maxNumKeys/3)){
+    rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
 }
 
 ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
 {
+
+  VALUE_T val = value;
   // WRITE ME
-  return LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, value);
+  return LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
   return ERROR_UNIMPL;
 }
 
