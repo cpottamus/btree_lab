@@ -479,7 +479,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     case BTREE_INTERIOR_NODE:
       // Scan through key/ptr pairs
       //and recurse if possible
-    for(offset=0;set<b.info.numkeys; offset++){
+    for(offset=0;offset<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
       if(key<testkey){
@@ -644,7 +644,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Check the length of the node and call rebalance if necessary
   parentNode.Serialize(buffercache, parentPtr);
 
-  if(parentNode.info.numkeys > (int)(2*maxNumKeys/3)){
+  if((int)parentNode.info.numkeys > (int)(2*maxNumKeys/3)){
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
