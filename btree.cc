@@ -412,7 +412,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
-        if(testkey>key){
+        if(key<=testkey){
         //Once you've found the spot the key needs to go, move all other keys over by 1
           for(SIZE_T offset2 = leafNode.info.numkeys-1; offset2 >= offset; offset2--){
           //Grab the old key and value
@@ -442,15 +442,16 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
-      if(leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
-        rc = Rebalance(leafNode, pointerPath);
+      if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
+        rc = Rebalance(leafPtr, pointerPath);
       }
     }
 
-
+    /*
     default:
     std::cout << "Unexpected Error on look up. Please perform sanityCheck and diagnose issue."<<std::endl;
     return ERROR_INSANE;
+    */ 
   }
 
   //If it exists, call update on it with the new value
@@ -460,12 +461,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
 }
 
 //This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
-ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath){
+ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath){
   BTreeNode b;
   ERROR_T rc;
   SIZE_T offset;
   KEY_T testkey;
-  SIZE_T ptr;
+  SIZE_T ptr;list
 
   rc = b.Unserialize(buffercache, node);
 
@@ -478,7 +479,7 @@ ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     case BTREE_INTERIOR_NODE:
       // Scan through key/ptr pairs
       //and recurse if possible
-    for(offset=0; offeset<b.info.numkeys; offset++){
+    for(offset=0; offset<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
       if(key<testkey){
