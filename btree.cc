@@ -244,7 +244,7 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
        return b.GetVal(offset,value);
      } else { 
 	  // BTREE_OP_UPDATE 
-      return b.SetVal(offest, value);
+      return b.SetVal(offset, value);
 	  // WRITE ME
       return ERROR_UNIMPL;
     }
@@ -370,9 +370,10 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
 
 
   //======ALGORITHM======
+  VALUE_T val = value;
 
   //Lookup and attempt to update key
-  ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, value);
+  ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
 
   switch(retCode) {
     //If there is no error in the update call, end function, declare update successful.
@@ -398,9 +399,10 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr);
     }else{
       std::vector<SIZE_T> pointerPath;
-      LookupLeaf(superblock.info.rootnode, &key, &pointerPath);
+      LookupLeaf(superblock.info.rootnode, key, pointerPath);
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
-      leafPtr = pointerPath.pop_back();
+      leafPtr = pointerPath.back();
+      pointerPath.pop_back();
       KEY_T testkey;
       KEY_T keySpot;
       VALUE_T valSpot;
@@ -599,7 +601,8 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   DeallocateNode(node);
 
 //Find the parent node
-  SIZE_T parentPtr = ptrPath.pop_back();
+  SIZE_T parentPtr = ptrPath.back();
+  ptrPath.pop_back();
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
   if(rc) {return rc;}

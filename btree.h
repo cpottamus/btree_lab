@@ -47,7 +47,7 @@ private:
   BufferCache *buffercache;
   SIZE_T       superblock_index;
   BTreeNode    superblock;
-  unsigned int maxKeyNum;
+  unsigned int maxNumKeys;
 
 protected:
 
@@ -142,11 +142,11 @@ public:
   ostream & Print(ostream &os) const;
 
   //This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
-  ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath);
+  ERROR_T LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath);
 
 //Rebalance takes a path of pointers and a node at the bottom of that path. It will split the node and recursively walk up the parent path
 // guaranteeing the sanity of each parent.
-  ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath);
+  ERROR_T Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath);
   
 };
 
