@@ -367,7 +367,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //This means that on every key you split, you need to include that key AGAIN in it's >= diskblock, so that is eventually included in a leaf node with it's key/value pair.
   //This is also what makes deleting a key a nightmare, since you have to get rid of ALL instances of the ky (including the leaf version with the value), and then rebalance.
   // page 636 in the book has good diagrams of this
-  cout << "Started insert" << endl;
+  //cout << "Started insert" << endl;
 
   //======ALGORITHM======
   VALUE_T val = value;
@@ -375,12 +375,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //Lookup and attempt to update key
   ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
 
-  cout << "Finished LookupOrUpdateInternal" << endl;
+  //cout << "Finished LookupOrUpdateInternal" << endl;
 
   switch(retCode) {
     //If there is no error in the update call, end function, declare update successful.
     case ERROR_NOERROR:
-    std::cout << "Key already existed, value updated."<<std::endl;
+    //std::cout << "Key already existed, value updated."<<std::endl;
     return ERROR_NOERROR;
     //If the key doesn't exist (as expected), begin insert functionality
     case ERROR_NONEXISTENT:
@@ -402,19 +402,19 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     }else{
       std::vector<SIZE_T> pointerPath;
       pointerPath.push_back(superblock.info.rootnode);
-      cout << "Got to LookupLeaf" << endl;
+      //cout << "Got to LookupLeaf" << endl;
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
-      cout << "Finished LookupLeaf" << endl;
+      //cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
       
       leafPtr = pointerPath.back();
       pointerPath.pop_back();
-      cout << "LeafPtr:" << leafPtr << endl;
+      //cout << "LeafPtr:" << leafPtr << endl;
       KEY_T testkey;
       KEY_T keySpot;
       VALUE_T valSpot;
       rc = leafNode.Unserialize(buffercache, leafPtr);
-      cout << "Unserialized LeafPtr" << endl;
+      //cout << "Unserialized LeafPtr" << endl;
       //Walk the leaf node
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
@@ -450,9 +450,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
-        cout << "Reached rebalance" << endl;
+        //cout << "Reached rebalance" << endl;
         rc = Rebalance(leafPtr, pointerPath);
-        cout << "Finished rebalance" << endl;
+        //cout << "Finished rebalance" << endl;
       }
     }
 
@@ -499,7 +499,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
         if (rc) { return rc; }
           //If there is no error on finding the appropriate pointer, push it onto our stack. 
         pointerPath.push_back(ptr);
-        cout << "PointerPath has: " << pointerPath[0] << endl;
+        //cout << "PointerPath has: " << pointerPath[0] << endl;
         return LookupLeaf(ptr, key, pointerPath);
       }
     }
