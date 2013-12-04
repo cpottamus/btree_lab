@@ -36,7 +36,7 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
 
   //Calculate maximum number of keys per bllock
   SIZE_T blockSize = buffercache->GetBlockSize();
-  maxNumKeys = blockSize/(keysize+valuesize);
+  maxNumKeys = blockSize/(16);
 
 }
 
@@ -246,7 +246,6 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
 	  // BTREE_OP_UPDATE 
       return b.SetVal(offset, value);
 	  // WRITE ME
-      return ERROR_UNIMPL;
     }
   }
 }
@@ -466,7 +465,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //If it exists, call update on it with the new value
 
 
-  return ERROR_UNIMPL;
+  return ERROR_NOERROR
 }
 
 //This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
@@ -667,7 +666,7 @@ ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
   VALUE_T val = value;
   // WRITE ME
   return LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
-  return ERROR_UNIMPL;
+  return ERROR_NOERROR
 }
 
 
@@ -788,6 +787,8 @@ ERROR_T BTreeIndex::SanityCheck() const
 ostream & BTreeIndex::Print(ostream &os) const
 {
   // WRITE ME
+  ERROT_T rc;
+  rc = Display(os, BTREE_DEPTH_DOT);
   return os;
 }
 
