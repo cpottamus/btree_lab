@@ -405,6 +405,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
       cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
+      
       leafPtr = pointerPath.back();
       pointerPath.pop_back();
       cout << "LeafPtr:" << leafPtr << endl;
@@ -497,6 +498,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
         if (rc) { return rc; }
           //If there is no error on finding the appropriate pointer, push it onto our stack. 
         pointerPath.push_back(ptr);
+        cout << "PointerPath has: " << pointerPath[0] << endl;
         return LookupLeaf(ptr, key, pointerPath);
       }
     }
