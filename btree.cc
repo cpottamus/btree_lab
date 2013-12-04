@@ -411,7 +411,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       KEY_T keySpot;
       VALUE_T valSpot;
       rc = leafNode.Unserialize(buffercache, leafPtr);
-
+      cout << "LeafPtr:" << leafPtr << endl;
       //Walk the leaf node
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
