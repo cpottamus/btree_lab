@@ -147,6 +147,9 @@ public:
 //Rebalance takes a path of pointers and a node at the bottom of that path. It will split the node and recursively walk up the parent path
 // guaranteeing the sanity of each parent.
   ERROR_T Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath);
+
+//Walks the tree starting at root node. For our sanity check.
+  ERROR_T SanityWalk(const SIZE_T &node, const KEY_T  &key);
   
 };
 

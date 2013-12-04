@@ -752,21 +752,108 @@ ERROR_T BTreeIndex::SanityCheck() const
   //3)Freelist has no cycles (how to check this?)
   //4)Interior nodes are only pointed to once.
   //5)leaf nodes are pointed to only once
-  //6)no pointers point to free list
   //7)Ordered keys
-  //8)Nodes all are within 1/3,2/3 length
   //9)Superblocks key count is same as actual number of keys (how does this account for duplicate keys?)
+  
+  //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
 
-  //TREE WALK
-  //During the tree walk: 
-  //make a list of all blocks listed as btree nodes. for use in 1
-  //Walk each node, and make sure that they are within minLen/maxLen (what is too empty?), also check that keys are in order: 7,8.
-  //If any pointers point to visited nodes, throw error, if any pointers point to freelist nodes, throw error. 4, 5, 2, 6.
+  //TODO :: Check all of freelist to see if there are any duplicate components
 
-
-  //3 and 9 are currently unimplemented.
-  //Consider incrementing key count as you walk each node, and comparing to superblock to check 9.
   return ERROR_UNIMPL;
+}
+
+//We'll use this for walking the tree for our sanity check.
+ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
+  BTreeNode b;
+  ERROR_T rc;
+  SIZE_T offset;
+  KEY_T testkey;
+  KEY_T tempkey;
+  SIZE_T ptr;
+
+  rc = b.Unserialize(buffercache, node);
+
+  if(rc!=ERROR_NOERROR){
+    return rc;
+  }
+
+      //Check to see if the nodes have proper lengths
+  if(b.info.numkeys>(int)(2*maxNumKeys/3)){
+    std::cout << "Current Node of type "<<b.info.nodetype<<" and number "<<b.info.nodenum<<" has "<<b.info.numkeys<<" keys. Which is over the 2/3 threshold of the maximum of "<<maxNumKeys<<" keys."<<std::endl;
+  }
+
+  switch(b.info.nodetype){
+    case BTREE_ROOT_NODE:
+    case BTREE_INTERIOR_NODE:
+      //Scan through key/ptr pairs
+      //and recurse if possible
+
+    //TODO :: Push node onto array, where we can check against other visited nodes.  4, 5. 
+
+    for(offset=0; offset<b.info.numkeys; offset++){
+      rc = b.GetKey(offset,testkey)
+      if(rc) {return rc; }
+
+      //If keys are not in proper size order
+      if(offset+1<b.info.numkeys){
+        rc = b.GetKey(offset+1, tempkey);
+        if(tempkey < testkey){
+          std::cout<<"The keys are not properly sorted!"<<std::endl;
+        }
+      }
+
+      if(key<testkey){
+            // OK, so we now have the first key that's larger
+            // so we ned to recurse on the ptr immediately previous to 
+            // this one, if it exists
+        rc=b.GetPtr(offset,ptr);
+        if(rc){return rc;}
+
+        return sanityWalk(ptr, key);
+      }
+    }
+
+    //If we get here, we need to go to the next pointer, if it exists.
+    if(b.info.numkeys>0){
+      rc = b.GetPtr(b.info.numkeys, ptr);
+      if(rc) { return rc; }
+
+      return sanityWalk(ptr, key);
+    }else{
+      //There are no keys at all on this node, so nowhere to go
+      return ERROR_NONEXISTENT;
+    }
+    break;
+    case BTREE_LEAF_NODE:
+    
+    for(offset=0; offset<b.info.numkeys;offset++){
+      rc = b.GetKey(offset, testkey);
+      if(rc) { 
+        std::cout << "Leaf Node is missing key"<<std::endl;
+        return rc;
+       }
+      rc =b.GetVal(offset, value);
+      if(rc){
+        std::cout << "leaf node key is missing associated value"<<std::endl;
+        return rc;
+      }
+
+      //If keys are not in proper size order
+      if(offset+1<b.info.numkeys){
+        rc = b.GetKey(offset+1, tempkey);
+        if(tempkey < testkey){
+          std::cout<<"The keys are not properly sorted!"<<std::endl;
+        }
+      }
+    }
+    break;
+    default:
+
+    return ERROR_INSANE;
+    break;
+  }
+
+  return ERROR_INSANE;
 }
 
 
