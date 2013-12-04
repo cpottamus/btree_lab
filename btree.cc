@@ -407,11 +407,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
       leafPtr = pointerPath.back();
       pointerPath.pop_back();
+      cout << "LeafPtr:" << leafPtr << endl;
       KEY_T testkey;
       KEY_T keySpot;
       VALUE_T valSpot;
       rc = leafNode.Unserialize(buffercache, leafPtr);
-      cout << "LeafPtr:" << leafPtr << endl;
+      cout << "Unserialized LeafPtr" << endl;
       //Walk the leaf node
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
