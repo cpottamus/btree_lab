@@ -367,13 +367,15 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //This means that on every key you split, you need to include that key AGAIN in it's >= diskblock, so that is eventually included in a leaf node with it's key/value pair.
   //This is also what makes deleting a key a nightmare, since you have to get rid of ALL instances of the ky (including the leaf version with the value), and then rebalance.
   // page 636 in the book has good diagrams of this
-
+  cout << "Started insert" << endl;
 
   //======ALGORITHM======
   VALUE_T val = value;
 
   //Lookup and attempt to update key
   ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
+
+  cout << "Finished LookupOrUpdateInternal" << endl;
 
   switch(retCode) {
     //If there is no error in the update call, end function, declare update successful.
@@ -399,7 +401,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr);
     }else{
       std::vector<SIZE_T> pointerPath;
+      cout << "Got to LookupLeaf" << endl;
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
+      cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
       leafPtr = pointerPath.back();
       pointerPath.pop_back();
@@ -443,7 +447,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
+        cout << "Reached rebalance" << endl;
         rc = Rebalance(leafPtr, pointerPath);
+        cout << "Finished rebalance" << endl;
       }
     }
 
@@ -648,6 +654,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
+  return ERROR_NOERROR;
 }
 
 ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
