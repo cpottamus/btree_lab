@@ -36,7 +36,7 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
 
   //Calculate maximum number of keys per bllock
   SIZE_T blockSize = buffercache->GetBlockSize();
-  maxNumKeys = blockSize/(keysize+valuesize);
+  maxNumKeys = blockSize/(16);
 
 }
 
@@ -246,7 +246,6 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
 	  // BTREE_OP_UPDATE 
       return b.SetVal(offset, value);
 	  // WRITE ME
-      return ERROR_UNIMPL;
     }
   }
 }
@@ -367,7 +366,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //This means that on every key you split, you need to include that key AGAIN in it's >= diskblock, so that is eventually included in a leaf node with it's key/value pair.
   //This is also what makes deleting a key a nightmare, since you have to get rid of ALL instances of the ky (including the leaf version with the value), and then rebalance.
   // page 636 in the book has good diagrams of this
-
+  //cout << "Started insert" << endl;
 
   //======ALGORITHM======
   VALUE_T val = value;
@@ -375,10 +374,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //Lookup and attempt to update key
   ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
 
+  //cout << "Finished LookupOrUpdateInternal" << endl;
+
   switch(retCode) {
     //If there is no error in the update call, end function, declare update successful.
     case ERROR_NOERROR:
-    std::cout << "Key already existed, value updated."<<std::endl;
+    //std::cout << "Key already existed, value updated."<<std::endl;
     return ERROR_NOERROR;
     //If the key doesn't exist (as expected), begin insert functionality
     case ERROR_NONEXISTENT:
@@ -399,20 +400,25 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr);
     }else{
       std::vector<SIZE_T> pointerPath;
+      pointerPath.push_back(superblock.info.rootnode);
+      //cout << "Got to LookupLeaf" << endl;
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
+      //cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
+      
       leafPtr = pointerPath.back();
       pointerPath.pop_back();
+      //cout << "LeafPtr:" << leafPtr << endl;
       KEY_T testkey;
       KEY_T keySpot;
       VALUE_T valSpot;
       rc = leafNode.Unserialize(buffercache, leafPtr);
-
+      //cout << "Unserialized LeafPtr" << endl;
       //Walk the leaf node
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
-        if(testkey>key){
+        if(key < testkey || key == testkey){
         //Once you've found the spot the key needs to go, move all other keys over by 1
           for(SIZE_T offset2 = leafNode.info.numkeys-1; offset2 >= offset; offset2--){
           //Grab the old key and value
@@ -425,10 +431,11 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
             if (rc) { return rc;}
             rc = leafNode.SetVal(offset2+1, valSpot);
             if (rc) { return rc;}
-
-           //Increment the key count for the given node.
-            leafNode.info.numkeys++;
           }
+
+          //Increment the key count for the given node.
+            leafNode.info.numkeys++;
+
         //assign the new key to offset
           rc = leafNode.SetKey(offset, key);
           if (rc) { return rc;}
@@ -442,25 +449,28 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
-      if(leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
-        rc = Rebalance(leafNode, pointerPath);
+      if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
+        //cout << "Reached rebalance" << endl;
+        rc = Rebalance(leafPtr, pointerPath);
+        //cout << "Finished rebalance" << endl;
       }
     }
 
-
+    /*
     default:
     std::cout << "Unexpected Error on look up. Please perform sanityCheck and diagnose issue."<<std::endl;
     return ERROR_INSANE;
+    */ 
   }
 
   //If it exists, call update on it with the new value
 
 
-  return ERROR_UNIMPL;
+  return ERROR_NOERROR;
 }
 
 //This lookup function will find the path to the node where the passed in key would go, and return it as a stack of pointers.
-ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath){
+ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector<SIZE_T> &pointerPath){
   BTreeNode b;
   ERROR_T rc;
   SIZE_T offset;
@@ -478,7 +488,7 @@ ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     case BTREE_INTERIOR_NODE:
       // Scan through key/ptr pairs
       //and recurse if possible
-    for(offset=0; offeset<b.info.numkeys; offset++){
+    for(offset=0;offset<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
       if(key<testkey){
@@ -489,6 +499,7 @@ ERROR_T BTreeindex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
         if (rc) { return rc; }
           //If there is no error on finding the appropriate pointer, push it onto our stack. 
         pointerPath.push_back(ptr);
+        //cout << "PointerPath has: " << pointerPath[0] << endl;
         return LookupLeaf(ptr, key, pointerPath);
       }
     }
@@ -529,7 +540,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T offset;
   SIZE_T offset2;
   KEY_T testkey;
-  SIZE_T ptr;
+  //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}
 
@@ -553,7 +564,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Find splitting point
   int midpoint = b.info.numkeys/2;
   //Build lower node, include the splitting key (this is a <= B+ tree)
-  for(offset = 0; offset<= midpoint; offset++){
+  for(offset = 0; (int)offset <= midpoint; offset++){
     //Get old node values
     rc = b.GetKey(offset, keySpot);
     if (rc) { return rc;}
@@ -614,7 +625,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   for(offset = 0; offset<parentNode.info.numkeys; offset++){
         rc = parentNode.GetKey(offset, testKey);
         if(rc){ return rc;}
-        if(testKey>splitKey){
+        if(splitKey < testKey || splitKey == testKey){
 
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
           for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
@@ -640,20 +651,27 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
           break;
         }
   }
+
+  //Increment the key count for the given node.
+  parentNode.info.numkeys++;
+
   //Check the length of the node and call rebalance if necessary
   parentNode.Serialize(buffercache, parentPtr);
 
-  if(leafNode.info.numkeys > (int)(2*maxNumKeys/3)){
-    rc = Rebalance(parentNode, ptrPath);
+  if((int)parentNode.info.numkeys > (int)(2*maxNumKeys/3)){
+    rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
+  return ERROR_NOERROR;
 }
 
 ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
 {
+
+  VALUE_T val = value;
   // WRITE ME
-  return LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, value);
-  return ERROR_UNIMPL;
+  return LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
+  return ERROR_NOERROR;
 }
 
 
@@ -861,6 +879,8 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
 ostream & BTreeIndex::Print(ostream &os) const
 {
   // WRITE ME
+  ERROR_T rc;
+  rc = Display(os, BTREE_DEPTH_DOT);
   return os;
 }
 
