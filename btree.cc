@@ -401,6 +401,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr);
     }else{
       std::vector<SIZE_T> pointerPath;
+      pointerPath.push_back(superblock.info.rootnode);
       cout << "Got to LookupLeaf" << endl;
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
       cout << "Finished LookupLeaf" << endl;
