@@ -431,10 +431,11 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
             if (rc) { return rc;}
             rc = leafNode.SetVal(offset2+1, valSpot);
             if (rc) { return rc;}
-
-           //Increment the key count for the given node.
-            leafNode.info.numkeys++;
           }
+
+          //Increment the key count for the given node.
+            leafNode.info.numkeys++;
+
         //assign the new key to offset
           rc = leafNode.SetKey(offset, key);
           if (rc) { return rc;}
@@ -650,6 +651,10 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
           break;
         }
   }
+
+  //Increment the key count for the given node.
+  parentNode.info.numkeys++;
+
   //Check the length of the node and call rebalance if necessary
   parentNode.Serialize(buffercache, parentPtr);
 
