@@ -436,7 +436,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           }
 
           //Increment the key count for the given node.
-            leafNode.info.numkeys++;
+          leafNode.info.numkeys++;
 
         //assign the new key to offset
           rc = leafNode.SetKey(offset, key);
@@ -577,7 +577,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
 
   //If A leafNode
   if(b.info.nodetype==BTREE_LEAF_NODE){
-  //Build lower node, include the splitting key (this is a <= B+ tree)
+  //Build left leaf node, include the splitting key (this is a <= B+ tree)
     for(offset = 0; (int)offset <= midpoint; offset++){
     //Get old node values
       rc = b.GetKey(offset, keySpot);
@@ -589,8 +589,9 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       if (rc) { return rc;}
       rc = leftNode.SetVal(offset, valSpot);
       if (rc) { return rc;}
+      leftNode.info.numkeys++;
     }
-  //Build Upper node
+  //Build right leaf node
     int spot=0;
     for(offset = midpoint+1; offset<b.info.numkeys; offset++){
     //Get values from old node.
@@ -604,63 +605,72 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       rc = rightNode.SetVal(spot, valSpot);
       if (rc) { return rc;}
       spot++;
+      rightNode.info.numkeys++;
     }
   //Find split key
     KEY_T splitKey;
     rc = b.GetKey(midpoint, splitKey);
   } else {//if it's an interior node.
       //Build left interior node
-      for(offset = 0; (int)offset <= midpoint; offset++){
+  for(offset = 0; (int)offset <= midpoint; offset++){
         //Get old key and pointers
-        rc = b.GetKey(offset, keySpot);
-        if (rc) { return rc;}
-        rc = b.GetPtr(offset, ptrSpot);
-        if (rc) { return rc;}
+    rc = b.GetKey(offset, keySpot);
+    if (rc) { return rc;}
+    rc = b.GetPtr(offset, ptrSpot);
+    if (rc) { return rc;}
         //Set new key and Pointer vals
-        rc = leftNode.SetKey(offset, keySpot);
-        if (rc) { return rc;}
-        rc = leftNode.SetPtr(offset, ptrSpot);
-      }
+    rc = leftNode.SetKey(offset, keySpot);
+    if (rc) { return rc;}
+    rc = leftNode.SetPtr(offset, ptrSpot);
+    leftNode.info.numkeys++;
+  }
       //Build Right interior node
-    int spot=0;
-    for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+  int spot=0;
+  for(offset = midpoint+1; offset<b.info.numkeys; offset++){
     //Get values from old node.
-      rc = b.GetKey(offset, keySpot);
-      if (rc) { return rc;}
-      rc = b.GetPtr(offset, ptrSpot);
-      if (rc) { return rc;}
+    rc = b.GetKey(offset, keySpot);
+    if (rc) { return rc;}
+    rc = b.GetPtr(offset, ptrSpot);
+    if (rc) { return rc;}
     //set values in new right node.
-      rc = rightNode.SetKey(spot, keySpot);
-      if (rc) { return rc;}
-      rc = rightNode.SetPtr(spot, ptrSpot);
-      if (rc) { return rc;}
-      spot++;
-    }
-    rc = b.GetPtr(offset+1, keySpot);
+    rc = rightNode.SetKey(spot, keySpot);
     if (rc) { return rc;}
-    rc = rightNode.SetPtr(offset+1, keySpot);
+    rc = rightNode.SetPtr(spot, ptrSpot);
     if (rc) { return rc;}
+    spot++;
+    rightNode.info.numkeys++;
   }
+  rc = b.GetPtr(offset+1, keySpot);
+  if (rc) { return rc;}
+  rc = rightNode.SetPtr(offset+1, keySpot);
+  if (rc) { return rc;}
+}
   //Serialize the new nodes
-  rc = leftNode.Serialize(buffercache, leftPtr);
-  if (rc) { return rc;}
-  rc = rightNode.Serialize(buffercache, rightPtr);
-  if (rc) { return rc;}
-  rc = b.Serialize(buffercache, node);
-  
-  //If we're all the way up at the root, we need to make a new root.
-  if (b.info.nodetype == BTREE_ROOT_NODE) {
-    SIZE_T newRootPtr;
-    BTreeNode newRootNode;
-    AllocateNode(newRootPtr);
-    newRootNode = BTreeNode(BTREE_ROOT_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-    superblock.info.rootnode = newRootPtr;
-    rc = newRootNode.Serialize(buffercache, newRootPtr);
-    ptrPath.push_back(newRootPtr);
-  }
-  //Deallocate the old (too large) node
-  DeallocateNode(node);
+rc = leftNode.Serialize(buffercache, leftPtr);
+if (rc) { return rc;}
+rc = rightNode.Serialize(buffercache, rightPtr);
+if (rc) { return rc;}
+rc = b.Serialize(buffercache, node);
 
+  //If we're all the way up at the root, we need to make a new root.
+if (b.info.nodetype == BTREE_ROOT_NODE) {
+  SIZE_T newRootPtr;
+  BTreeNode newRootNode;
+  AllocateNode(newRootPtr);
+  newRootNode = BTreeNode(BTREE_ROOT_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+  superblock.info.rootnode = newRootPtr;
+  rc = newRootNode.Serialize(buffercache, newRootPtr);
+  if(rc) {return rc;}
+  rc = newRootNode.Unserialize(buffercache, newRootPtr);
+  if(rc) {return rc;}
+  newRootNode.SetKey(0, splitKey);
+  newRootNode.SetPtr(0, leftPtr);
+  newRootNode.SetPtr(1, rightPtr);
+  newRootNode.info.numkeys++;
+  rc = newRootNode.Serialize(buffercache, newRootPtr);
+  if(rc) {return rc;}
+}
+else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
   ptrPath.pop_back();
@@ -673,37 +683,38 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
 
 //find split keys spot in parent (interior) node, insert it and update keys and pointers.
   for(offset = 0; offset<parentNode.info.numkeys; offset++){
-        rc = parentNode.GetKey(offset, testKey);
-        if(rc){ return rc;}
-        if(splitKey < testKey || splitKey == testKey){
+    rc = parentNode.GetKey(offset, testKey);
+    if(rc){ return rc;}
+    if(splitKey < testKey || splitKey == testKey){
 
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
-          for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
+      for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
             //Grab the old key and pointer
-            rc = parentNode.GetKey(offset2, keySpot);
-            if(rc){ return rc;}
-            rc = parentNode.GetPtr(offset2, ptrSpot);
-            if(rc){ return rc;}
+        rc = parentNode.GetKey(offset2, keySpot);
+        if(rc){ return rc;}
+        rc = parentNode.GetPtr(offset2, ptrSpot);
+        if(rc){ return rc;}
             //Move it up by 1
-            rc = parentNode.SetKey(offset2+1, keySpot);
-            if(rc){ return rc;}
-            rc = parentNode.SetPtr(offset2+1, ptrSpot);
-          }
+        rc = parentNode.SetKey(offset2+1, keySpot);
+        if(rc){ return rc;}
+        rc = parentNode.SetPtr(offset2+1, ptrSpot);
+      }
           //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
           //Set our pointers and our new key
-          rc = parentNode.SetPtr(offset2, rightPtr);
-          if(rc){ return rc;}
-          rc = parentNode.SetPtr(offset2-1,leftPtr);
-          if(rc){ return rc;}
-          rc = parentNode.SetKey(offset2, splitKey);
-          if(rc){ return rc;}
+      rc = parentNode.SetPtr(offset2, rightPtr);
+      if(rc){ return rc;}
+      rc = parentNode.SetPtr(offset2-1,leftPtr);
+      if(rc){ return rc;}
+      rc = parentNode.SetKey(offset2, splitKey);
+      if(rc){ return rc;}
 
-          break;
-        }
+      break;
+    }
   }
 
   //Increment the key count for the given node.
   parentNode.info.numkeys++;
+
 
   //Check the length of the node and call rebalance if necessary
   parentNode.Serialize(buffercache, parentPtr);
@@ -712,7 +723,10 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
-  return ERROR_NOERROR;
+}
+  //Deallocate the old (too large) node
+DeallocateNode(node);
+return ERROR_NOERROR;
 }
 
 ERROR_T BTreeIndex::Update(const KEY_T &key, const VALUE_T &value)
