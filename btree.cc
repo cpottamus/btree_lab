@@ -828,7 +828,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
         rc=b.GetPtr(offset,ptr);
         if(rc){return rc;}
 
-        return sanityWalk(ptr, key);
+        return SanityWalk(ptr, key);
       }
     }
 
@@ -837,7 +837,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
       rc = b.GetPtr(b.info.numkeys, ptr);
       if(rc) { return rc; }
 
-      return sanityWalk(ptr, key);
+      return SanityWalk(ptr, key);
     }else{
       //There are no keys at all on this node, so nowhere to go
       return ERROR_NONEXISTENT;
