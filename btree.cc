@@ -779,7 +779,7 @@ ERROR_T BTreeIndex::SanityCheck() const
 
   return ERROR_UNIMPL;
 }
-/*
+
 //We'll use this for walking the tree for our sanity check.
 ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
   BTreeNode b;
@@ -788,6 +788,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
   KEY_T testkey;
   KEY_T tempkey;
   SIZE_T ptr;
+  VALUE_T value;
 
   rc = b.Unserialize(buffercache, node);
 
@@ -797,7 +798,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
 
       //Check to see if the nodes have proper lengths
   if(b.info.numkeys>(int)(2*maxNumKeys/3)){
-    std::cout << "Current Node of type "<<b.info.nodetype<<" and number "<<b.info.nodenum<<" has "<<b.info.numkeys<<" keys. Which is over the 2/3 threshold of the maximum of "<<maxNumKeys<<" keys."<<std::endl;
+    std::cout << "Current Node of type "<<b.info.nodetype<<" has "<<b.info.numkeys<<" keys. Which is over the 2/3 threshold of the maximum of "<<maxNumKeys<<" keys."<<std::endl;
   }
 
   switch(b.info.nodetype){
@@ -809,7 +810,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
     //TODO :: Push node onto set, where we can check against other visited nodes.  4, 5. 
 
     for(offset=0; offset<b.info.numkeys; offset++){
-      rc = b.GetKey(offset,testkey)
+      rc = b.GetKey(offset,testkey);
       if(rc) {return rc; }
 
       //If keys are not in proper size order
@@ -873,7 +874,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
 
   return ERROR_INSANE;
 }
-*/
+
 
 
 ostream & BTreeIndex::Print(ostream &os) const
