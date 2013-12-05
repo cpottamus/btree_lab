@@ -806,7 +806,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
       //Scan through key/ptr pairs
       //and recurse if possible
 
-    //TODO :: Push node onto array, where we can check against other visited nodes.  4, 5. 
+    //TODO :: Push node onto set, where we can check against other visited nodes.  4, 5. 
 
     for(offset=0; offset<b.info.numkeys; offset++){
       rc = b.GetKey(offset,testkey)
