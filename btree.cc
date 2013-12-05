@@ -542,6 +542,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T offset;
   SIZE_T offset2;
   KEY_T testkey;
+  int newType;
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}
@@ -551,9 +552,9 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T rightPtr;
   AllocateNode(leftPtr);
   if(b.info.nodetype == BTREE_LEAF_NODE){
-    int newType = BTREE_LEAF_NODE;
+    newType = BTREE_LEAF_NODE;
   }else{
-    int newType = BTREE_INTERIOR_NODE;
+    newType = BTREE_INTERIOR_NODE;
   }
   leftNode = BTreeNode(newType, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
   rc = leftNode.Serialize(buffercache, leftPtr);
@@ -607,9 +608,6 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       spot++;
       rightNode.info.numkeys++;
     }
-  //Find split key
-    KEY_T splitKey;
-    rc = b.GetKey(midpoint, splitKey);
   } else {//if it's an interior node.
       //Build left interior node
   for(offset = 0; (int)offset <= midpoint; offset++){
@@ -640,9 +638,9 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     spot++;
     rightNode.info.numkeys++;
   }
-  rc = b.GetPtr(offset+1, keySpot);
+  rc = b.GetPtr(offset+1, ptrSpot);
   if (rc) { return rc;}
-  rc = rightNode.SetPtr(offset+1, keySpot);
+  rc = rightNode.SetPtr(offset+1, ptrSpot);
   if (rc) { return rc;}
 }
   //Serialize the new nodes
@@ -651,6 +649,12 @@ if (rc) { return rc;}
 rc = rightNode.Serialize(buffercache, rightPtr);
 if (rc) { return rc;}
 rc = b.Serialize(buffercache, node);
+
+  //Find split key
+KEY_T splitKey;
+rc = b.GetKey(midpoint, splitKey);
+if (rc) { return rc;}
+
 
   //If we're all the way up at the root, we need to make a new root.
 if (b.info.nodetype == BTREE_ROOT_NODE) {
@@ -914,7 +918,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
       if(rc) { 
         std::cout << "Leaf Node is missing key"<<std::endl;
         return rc;
-       }
+      }
       rc =b.GetVal(offset, value);
       if(rc){
         std::cout << "leaf node key is missing associated value"<<std::endl;
