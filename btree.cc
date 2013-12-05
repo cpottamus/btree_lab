@@ -415,7 +415,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //Built right node and connect
       AllocateNode(rightLeafPtr);
       rightLeafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-      rc = rightLeafNode.Serialize(buffercache, rightLeafNode);
+      rc = rightLeafNode.Serialize(buffercache, rightLeafPtr);
       if(rc){ return rc;}
       rootNode.SetPtr(1, rightLeafPtr);
       rc = rootNode.Serialize(buffercache, superblock.info.rootnode);
