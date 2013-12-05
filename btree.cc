@@ -385,8 +385,11 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //Use a stack of pointers to track the path down to the node where the key would go.
     static bool initBlock= false;
     BTreeNode leafNode;
+    BTreeNode rootNode;
+    BTreeNode rightLeafNode;
     ERROR_T rc;
     SIZE_T leafPtr;
+    SIZE_T rightLeafPtr;
     //If no keys  existant yet...
     if(!initBlock){
       initBlock=true;
@@ -395,11 +398,28 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
       leafNode.Serialize(buffercache, leafPtr);
       rc = leafNode.Unserialize(buffercache, leafPtr);
+      if(rc){ return rc;}
       leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
       //Re-serialize after the access and write. 
-      leafNode.Serialize(buffercache, leafPtr);
+      leafNode.Serialize(buffercache, rightLeafPtr);
+
+      //Connect it to root
+      rc = rootNode.Unserialize(buffercache, superblock.info.rootnode);
+      if(rc){ return rc;}
+      rootNode.info.numkeys++;
+      rootNode.SetPtr(0, leafPtr);
+      rootNode.SetKey(0, key);
+
+      //Built right node and connect
+      AllocateNode(rightLeafPtr);
+      rightLeafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+      rc = rightLeafNode.Serialize(buffercache, rightLeafNode);
+      if(rc){ return rc;}
+      rootNode.SetPtr(1, rightLeafPtr);
+      rc = rootNode.Serialize(buffercache, superblock.info.rootnode);
+      if(rc){ return rc;}
     }else{
       std::vector<SIZE_T> pointerPath;
       pointerPath.push_back(superblock.info.rootnode);
