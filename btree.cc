@@ -243,9 +243,7 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
      if (op==BTREE_OP_LOOKUP) { 
        return b.GetVal(offset,value);
      } else { 
-	  // BTREE_OP_UPDATE 
       return b.SetVal(offset, value);
-	  // WRITE ME
     }
   }
 }
@@ -385,12 +383,13 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     case ERROR_NONEXISTENT:
       //traverse to find the leaf
       //Use a stack of pointers to track the path down to the node where the key would go.
-    
+    static bool initBlock= false;
     BTreeNode leafNode;
     ERROR_T rc;
     SIZE_T leafPtr;
     //If no keys  existant yet...
-    if(leafNode.info.numkeys==0){
+    if(!initBlock){
+      initBlock=true;
       //Allocate a new block, and set the values to the first key spot.
       AllocateNode(leafPtr);
       leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
@@ -840,7 +839,7 @@ ERROR_T BTreeIndex::SanityCheck() const
   //5)leaf nodes are pointed to only once
   //7)Ordered keys
   //9)Superblocks key count is same as actual number of keys (how does this account for duplicate keys?)
-  
+
   //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
 
   //TODO :: Check all of freelist to see if there are any duplicate components
