@@ -403,7 +403,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
       //Re-serialize after the access and write. 
-      leafNode.Serialize(buffercache, rightLeafPtr);
+      leafNode.Serialize(buffercache, leafPtr);
 
       //Connect it to root
       rc = rootNode.Unserialize(buffercache, superblock.info.rootnode);
