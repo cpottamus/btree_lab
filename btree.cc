@@ -779,7 +779,7 @@ ERROR_T BTreeIndex::SanityCheck() const
 
   return ERROR_UNIMPL;
 }
-
+/*
 //We'll use this for walking the tree for our sanity check.
 ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
   BTreeNode b;
@@ -873,7 +873,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
 
   return ERROR_INSANE;
 }
-
+*/
 
 
 ostream & BTreeIndex::Print(ostream &os) const
