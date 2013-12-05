@@ -437,6 +437,8 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       rc = leafNode.Unserialize(buffercache, leafPtr);
       //cout << "Unserialized LeafPtr" << endl;
       //Walk the leaf node
+      //Increment the key count for the given node.
+      leafNode.info.numkeys++;
       for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
@@ -454,9 +456,6 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
             rc = leafNode.SetVal(offset2+1, valSpot);
             if (rc) { return rc;}
           }
-
-          //Increment the key count for the given node.
-          leafNode.info.numkeys++;
 
         //assign the new key to offset
           rc = leafNode.SetKey(offset, key);
