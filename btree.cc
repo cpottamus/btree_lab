@@ -599,6 +599,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   if(b.info.nodetype==BTREE_LEAF_NODE){
   //Build left leaf node, include the splitting key (this is a <= B+ tree)
     for(offset = 0; (int)offset <= midpoint; offset++){
+    leftNode.info.numkeys++;
     //Get old node values
       rc = b.GetKey(offset, keySpot);
       if (rc) { return rc;}
@@ -609,12 +610,12 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       if (rc) { return rc;}
       rc = leftNode.SetVal(offset, valSpot);
       if (rc) { return rc;}
-      leftNode.info.numkeys++;
     }
   //Build right leaf node
     int spot=0;
     for(offset = midpoint+1; offset<b.info.numkeys; offset++){
     //Get values from old node.
+      rightNode.info.numkeys++;
       rc = b.GetKey(offset, keySpot);
       if (rc) { return rc;}
       rc = b.GetVal(offset, valSpot);
@@ -625,11 +626,11 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       rc = rightNode.SetVal(spot, valSpot);
       if (rc) { return rc;}
       spot++;
-      rightNode.info.numkeys++;
     }
   } else {//if it's an interior node.
       //Build left interior node
   for(offset = 0; (int)offset <= midpoint; offset++){
+    leftNode.info.numkeys++;
         //Get old key and pointers
     rc = b.GetKey(offset, keySpot);
     if (rc) { return rc;}
@@ -639,11 +640,11 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     rc = leftNode.SetKey(offset, keySpot);
     if (rc) { return rc;}
     rc = leftNode.SetPtr(offset, ptrSpot);
-    leftNode.info.numkeys++;
   }
       //Build Right interior node
   int spot=0;
   for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+    rightNode.info.numkeys++;
     //Get values from old node.
     rc = b.GetKey(offset, keySpot);
     if (rc) { return rc;}
@@ -655,7 +656,6 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     rc = rightNode.SetPtr(spot, ptrSpot);
     if (rc) { return rc;}
     spot++;
-    rightNode.info.numkeys++;
   }
   rc = b.GetPtr(offset+1, ptrSpot);
   if (rc) { return rc;}
@@ -703,6 +703,8 @@ else{
 
 
 
+//Increment the key count for the given node.
+  parentNode.info.numkeys++;
 
 //find split keys spot in parent (interior) node, insert it and update keys and pointers.
   for(offset = 0; offset<parentNode.info.numkeys; offset++){
@@ -734,9 +736,6 @@ else{
       break;
     }
   }
-
-  //Increment the key count for the given node.
-  parentNode.info.numkeys++;
 
 
   //Check the length of the node and call rebalance if necessary
