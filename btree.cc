@@ -395,6 +395,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
       leafNode.Serialize(buffercache, leafPtr);
       rc = leafNode.Unserialize(buffercache, leafPtr);
+      leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
       //Re-serialize after the access and write. 
@@ -666,10 +667,10 @@ if (b.info.nodetype == BTREE_ROOT_NODE) {
   if(rc) {return rc;}
   rc = newRootNode.Unserialize(buffercache, newRootPtr);
   if(rc) {return rc;}
+  newRootNode.info.numkeys++;
   newRootNode.SetKey(0, splitKey);
   newRootNode.SetPtr(0, leftPtr);
   newRootNode.SetPtr(1, rightPtr);
-  newRootNode.info.numkeys++;
   rc = newRootNode.Serialize(buffercache, newRootPtr);
   if(rc) {return rc;}
 }
