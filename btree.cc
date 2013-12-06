@@ -707,7 +707,7 @@ rc = b.Serialize(buffercache, node);
 
   //Find split key
 KEY_T splitKey;
-rc = b.GetKey(midpoint, splitKey);
+rc = b.GetKey(midpoint-1, splitKey);
 if (rc) { return rc;}
 
 
