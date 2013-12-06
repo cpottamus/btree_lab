@@ -391,15 +391,18 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     ERROR_T rc;
     SIZE_T leafPtr;
     SIZE_T rightLeafPtr;
+          
+    //Allocate a new block, and set the values to the first key spot.
+    AllocateNode(leafPtr);
+    leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+    leafNode.Serialize(buffercache, leafPtr);
+    rc = leafNode.Unserialize(buffercache, leafPtr);
+    if(rc){ return rc;}
+          
     //If no keys  existant yet...
     if(!initBlock){
       initBlock=true;
-      //Allocate a new block, and set the values to the first key spot.
-      AllocateNode(leafPtr);
-      leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-      leafNode.Serialize(buffercache, leafPtr);
-      rc = leafNode.Unserialize(buffercache, leafPtr);
-      if(rc){ return rc;}
+      
       leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
@@ -421,7 +424,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       rootNode.SetPtr(1, rightLeafPtr);
       rc = rootNode.Serialize(buffercache, superblock.info.rootnode);
       if(rc){ return rc;}
-    }else{
+    } else{
       std::vector<SIZE_T> pointerPath;
       pointerPath.push_back(superblock.info.rootnode);
       //cout << "Got to LookupLeaf" << endl;
