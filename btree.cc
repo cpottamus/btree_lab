@@ -712,6 +712,7 @@ if (rc) { return rc;}
 
 
   //If we're all the way up at the root, we need to make a new root.
+    std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
 if (b.info.nodetype == BTREE_ROOT_NODE) {
   std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<endl;
   SIZE_T newRootPtr;
@@ -753,7 +754,7 @@ else{
       std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
 
-      for(offset2= parentNode.info.numkeys-2; offset2 > offset; offset2-- ){
+      for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
         std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
             //Grab the old key and pointer
         rc = parentNode.GetKey(offset2, keySpot);
