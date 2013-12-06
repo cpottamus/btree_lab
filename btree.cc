@@ -360,8 +360,6 @@ ERROR_T BTreeIndex::Lookup(const KEY_T &key, VALUE_T &value)
 
 ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
 {
-  // WRITE ME
-
   //This is really a B+ tree (with optional sequentially linked leaf nodes).
   //This means that on every key you split, you need to include that key AGAIN in it's >= diskblock, so that is eventually included in a leaf node with it's key/value pair.
   //This is also what makes deleting a key a nightmare, since you have to get rid of ALL instances of the ky (including the leaf version with the value), and then rebalance.
@@ -401,7 +399,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     
     rootNode.Serialize(buffercache, rootPtr);
           
-    //If no keys  existant yet...
+    //If no keys  existent yet...
     if(!initBlock){
       initBlock=true;
       
