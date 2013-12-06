@@ -740,7 +740,7 @@ else{
     if(splitKey < testKey || splitKey == testKey){
 
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
-      for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
+      for(offset2= parentNode.info.numkeys-2; offset2 > offset; offset2-- ){
             //Grab the old key and pointer
         rc = parentNode.GetKey(offset2, keySpot);
         if(rc){ return rc;}
