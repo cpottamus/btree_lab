@@ -553,7 +553,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
 
       //if we get here, we need to go to the next pointer, if it exists.
     if(b.info.numkeys>0){
-      rc=b.GetPtr(b.info.numkeys-1,ptr);
+      rc=b.GetPtr(b.info.numkeys,ptr);
       if (rc) { return rc; }
         //If there is no error on finding the appropriate pointer, push it onto our stack. 
       pointerPath.push_back(ptr);
