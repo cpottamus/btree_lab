@@ -759,7 +759,7 @@ else{
             newParentNode.SetPtr(offset + 2, ptrSpot);
         } else {
             if (splitKey < testKey) {
-                
+                newKeyInserted = true;
                 newParentNode.SetPtr(offset, leftPtr);
                 newParentNode.SetKey(offset, splitKey);
                 newParentNode.SetPtr(offset+1, rightPtr);
