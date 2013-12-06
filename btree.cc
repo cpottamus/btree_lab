@@ -884,7 +884,7 @@ ERROR_T BTreeIndex::SanityCheck() const
   //std::set<BTreeNode> allTreeNodes;
 
   //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
-  ERROR_T retCode = SanityWalk(superblock.info.rootnode, /*allTreeNodes*/);
+  ERROR_T retCode = SanityWalk(superblock.info.rootnode/*, allTreeNodes*/);
   
   //TODO :: Check all of freelist to see if there are any duplicate components
   
@@ -897,7 +897,7 @@ ERROR_T BTreeIndex::SanityCheck() const
 }
 
 //We'll use this for walking the tree for our sanity check.
-ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, /*std::set<BTreeNode> &allTreeNodes*/) const{
+ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTreeNodes*/) const{
   BTreeNode b;
   ERROR_T rc;
   SIZE_T offset;
@@ -948,7 +948,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, /*std::set<BTreeNode> &allTre
         rc=b.GetPtr(offset,ptr);
         if(rc){return rc;}
 
-        return SanityWalk(ptr, /*allTreeNodes*/);
+        return SanityWalk(ptr/*, allTreeNodes*/);
 
 //      if(key<testkey){
             // OK, so we now have the first key that's larger
@@ -966,7 +966,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, /*std::set<BTreeNode> &allTre
       rc = b.GetPtr(b.info.numkeys, ptr);
       if(rc) { return rc; }
 
-      return SanityWalk(ptr, /*allTreeNodes*/);
+      return SanityWalk(ptr/*, allTreeNodes*/);
     }else{
       //There are no keys at all on this node, so nowhere to go
       std::cout << "The keys on this interior node are nonexistent."<<std::endl;
