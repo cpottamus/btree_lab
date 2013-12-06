@@ -713,7 +713,7 @@ if (rc) { return rc;}
   //If we're all the way up at the root, we need to make a new root.
   //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
 if (b.info.nodetype == BTREE_ROOT_NODE) {
-  //std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<endl;
+  std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
   AllocateNode(newRootPtr);
@@ -726,7 +726,7 @@ if (b.info.nodetype == BTREE_ROOT_NODE) {
     newRootNode.SetPtr(1, rightPtr);
   rc = newRootNode.Serialize(buffercache, newRootPtr);
   if(rc) {return rc;}
-
+std::cout<<"::: We made it here! Root node"<<std::endl;
 }
 else{
 //Find the parent node
