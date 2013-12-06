@@ -37,9 +37,6 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
   //Calculate maximum number of keys per bllock
   SIZE_T blockSize = buffercache->GetBlockSize();
   maxNumKeys = blockSize/(16);
-
-    
-    initBlock = false;
 }
 
 BTreeIndex::BTreeIndex()
@@ -391,6 +388,15 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     ERROR_T rc;
     SIZE_T leafPtr;
     SIZE_T rightLeafPtr;
+          
+    SIZE_T rootPtr = superblock.info.rootnode;
+    rootNode.Unserialize(buffercache, rootPtr);
+    initBlock = false;
+    if (rootNode.info.numkeys != 0) {
+        initBlock = true;
+    }
+    
+    rootNode.Serialize(buffercache, rootPtr);
           
     //If no keys  existant yet...
     if(!initBlock){
