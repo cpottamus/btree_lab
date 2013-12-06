@@ -772,7 +772,7 @@ else{
       if(rc){ return rc;}
       rc = parentNode.SetPtr(offset2,leftPtr);
       if(rc){ return rc;}
-      rc = parentNode.SetKey(offset2, splitKey);
+      rc = parentNode.SetKey(offset2+1, splitKey);
       if(rc){ return rc;}
 
       break;
