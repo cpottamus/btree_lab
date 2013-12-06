@@ -38,6 +38,8 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
   SIZE_T blockSize = buffercache->GetBlockSize();
   maxNumKeys = blockSize/(16);
 
+    
+    initBlock = false;
 }
 
 BTreeIndex::BTreeIndex()
@@ -383,7 +385,6 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     case ERROR_NONEXISTENT:
       //traverse to find the leaf
       //Use a stack of pointers to track the path down to the node where the key would go.
-    static bool initBlock= false;
     BTreeNode leafNode;
     BTreeNode rootNode;
     BTreeNode rightLeafNode;
