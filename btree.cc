@@ -589,7 +589,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   ERROR_T rc;
   SIZE_T offset;
   SIZE_T offset2;
-  KEY_T testkey;
+    
   int newType;
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
@@ -742,47 +742,81 @@ else{
 
 
 //Increment the key count for the given node.
-  parentNode.info.numkeys++;
+  //parentNode.info.numkeys++;
 
-//find split keys spot in parent (interior) node, insert it and update keys and pointers.
-  for(offset = 0; offset<parentNode.info.numkeys-1; offset++){
-    //std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
-    rc = parentNode.GetKey(offset, testKey);
-    if(rc){ return rc;}
-    if(splitKey < testKey || splitKey == testKey){ // if testkey > splitkey
-      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
-      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
-          //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
-      for(offset2= parentNode.info.numkeys-2 ; offset2 >= offset; offset2-- ){
-        //std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
-            //Grab the old key and pointer
-        rc = parentNode.GetKey(offset2, keySpot);
-        if(rc){ return rc;}
-        rc = parentNode.GetPtr(offset2, ptrSpot);
-        if(rc){ return rc;}
-            //Move it up by 1
-        rc = parentNode.SetKey(offset2+1, keySpot);
-        if(rc){ return rc;}
-        rc = parentNode.SetPtr(offset2+2, ptrSpot);
-      }
-          //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
-          //Set our pointers and our new key
-      rc = parentNode.SetPtr(offset+1, rightPtr);
-      if(rc){ return rc;}
-      rc = parentNode.SetPtr(offset,leftPtr);
-      if(rc){ return rc;}
-      rc = parentNode.SetKey(offset, splitKey);
-      if(rc){ return rc;}
-
-      break;
+    BTreeNode newParentNode = BTreeNode(parentNode.info.nodetype, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+    newParentNode.info.numkeys = parentNode.info.numkeys + 1;
+    
+    bool newKeyInserted = false;
+    for (offset = 0; offset <= newParentNode.info.numkeys; offset++) {
+        rc = parentNode.GetKey(offset, testKey);
+        //    if(rc){ return rc;}
+        if (newKeyInserted) {
+            rc = parentNode.GetKey(offset, keySpot);
+            newParentNode.SetKey(offset + 1, keySpot);
+            
+            rc = parentNode.GetPtr(offset + 1, ptrSpot);
+            newParentNode.SetPtr(offset + 2, ptrSpot);
+        } else {
+            if (splitKey < testKey) {
+                
+                newParentNode.SetPtr(offset, leftPtr);
+                newParentNode.SetKey(offset, splitKey);
+                newParentNode.SetPtr(offset+1, rightPtr);
+                offset = offset - 1;
+                
+            } else {
+                rc = parentNode.GetKey(offset, keySpot);
+                newParentNode.SetKey(offset, keySpot);
+                
+                rc = parentNode.GetPtr(offset, ptrSpot);
+                newParentNode.SetPtr(offset, ptrSpot);
+            }
+        }
     }
-  }
+    
+    newParentNode.Serialize(buffercache, parentPtr);
+    
+    
+//find split keys spot in parent (interior) node, insert it and update keys and pointers.
+//  for(offset = 0; offset<parentNode.info.numkeys-1; offset++){
+//    //std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
+//    rc = parentNode.GetKey(offset, testKey);
+//    if(rc){ return rc;}
+//    if(splitKey < testKey || splitKey == testKey){ // if testkey > splitkey
+//      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
+//      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
+//          //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
+//      for(offset2= parentNode.info.numkeys-2 ; offset2 >= offset; offset2-- ){
+//        //std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
+//            //Grab the old key and pointer
+//        rc = parentNode.GetKey(offset2, keySpot);
+//        if(rc){ return rc;}
+//        rc = parentNode.GetPtr(offset2, ptrSpot);
+//        if(rc){ return rc;}
+//            //Move it up by 1
+//        rc = parentNode.SetKey(offset2+1, keySpot);
+//        if(rc){ return rc;}
+//        rc = parentNode.SetPtr(offset2+2, ptrSpot);
+//      }
+//          //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
+//          //Set our pointers and our new key
+//      rc = parentNode.SetPtr(offset2+1, rightPtr);
+//      if(rc){ return rc;}
+//      rc = parentNode.SetPtr(offset,leftPtr);
+//      if(rc){ return rc;}
+//      rc = parentNode.SetKey(offset, splitKey);
+//      if(rc){ return rc;}
+//
+//      break;
+//    }
+//  }
 
 
   //Check the length of the node and call rebalance if necessary
-  parentNode.Serialize(buffercache, parentPtr);
+  //parentNode.Serialize(buffercache, parentPtr);
 
-  if((int)parentNode.info.numkeys > (int)(2*maxNumKeys/3)){
+  if((int)newParentNode.info.numkeys > (int)(2*maxNumKeys/3)){
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
