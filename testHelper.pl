@@ -2,6 +2,9 @@
 
 
 system "rm -f testdisk.*";
+system "touch .dependencies";
+system "make depend clean";
+system "make";
 system "makedisk testdisk 1024 128 1 1024 1 100 10 .28";
 system "btree_init testdisk 1024 4 4";
 
