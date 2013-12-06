@@ -25,9 +25,9 @@ my @commands = ("btree_insert testdisk 1024 1111 7777",
 fisher_yates_shuffle(\@commands);
 
 foreach my $command(@commands){
-	print '::::::::::::::::';
+	print '::::::::::::::::\n';
 	print $command;
-	print '::::::::::::::::';
+	print '::::::::::::::::\n';
 	system $command;
 }
 
