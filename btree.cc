@@ -454,7 +454,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       for(SIZE_T offset =0; offset<leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
-        if(key < testkey || key == testkey){
+        if(key < testkey || key == testkey) {
         //Once you've found the spot the key needs to go, move all other keys over by 1
           for(int offset2 = leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
           //Grab the old key and value
