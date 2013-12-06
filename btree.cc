@@ -748,7 +748,7 @@ else{
     newParentNode.info.numkeys = parentNode.info.numkeys + 1;
     
     bool newKeyInserted = false;
-    for (offset = 0; offset <= newParentNode.info.numkeys; offset++) {
+    for (offset = 0; offset < newParentNode.info.numkeys - 1; offset++) {
         rc = parentNode.GetKey(offset, testKey);
         //    if(rc){ return rc;}
         if (newKeyInserted) {
