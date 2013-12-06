@@ -768,11 +768,11 @@ else{
       }
           //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
           //Set our pointers and our new key
-      rc = parentNode.SetPtr(offset+1, rightPtr);
+      rc = parentNode.SetPtr(offset2+1, rightPtr);
       if(rc){ return rc;}
-      rc = parentNode.SetPtr(offset,leftPtr);
+      rc = parentNode.SetPtr(offset2,leftPtr);
       if(rc){ return rc;}
-      rc = parentNode.SetKey(offset+1, splitKey);
+      rc = parentNode.SetKey(offset2+1, splitKey);
       if(rc){ return rc;}
 
       break;
