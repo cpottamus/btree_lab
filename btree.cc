@@ -451,7 +451,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.info.numkeys++;
         //cout << leafNode.info.numkeys << endl;
         
-      for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
+      for(int offset =0; offset<leafNode.info.numkeys; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
         if(key < testkey || key == testkey){
@@ -470,9 +470,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           }
 
         //assign the new key to offset
-          rc = leafNode.SetKey(offset, key);
+          rc = leafNode.SetKey((SIZE_T)offset, key);
           if (rc) { return rc;}
-          rc = leafNode.SetVal(offset, value);
+          rc = leafNode.SetVal((SIZE_T)offset, value);
           if (rc) { return rc;}
 
           break;
