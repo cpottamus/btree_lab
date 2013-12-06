@@ -713,7 +713,7 @@ if (rc) { return rc;}
 
   //If we're all the way up at the root, we need to make a new root.
 if (b.info.nodetype == BTREE_ROOT_NODE) {
-  //std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<endl;
+  std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
   AllocateNode(newRootPtr);
@@ -745,16 +745,16 @@ else{
 
 //find split keys spot in parent (interior) node, insert it and update keys and pointers.
   for(offset = 0; offset<parentNode.info.numkeys-1; offset++){
-    //std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
+    std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
     rc = parentNode.GetKey(offset, testKey);
     if(rc){ return rc;}
-    if(splitKey < testKey || splitKey == testKey){
-      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
-      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
+    if(splitKey < testKey || splitKey == testKey){ // if testkey > splitkey
+      std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
+      std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
 
       for(offset2= parentNode.info.numkeys-2; offset2 > offset; offset2-- ){
-        //std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
+        std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
             //Grab the old key and pointer
         rc = parentNode.GetKey(offset2, keySpot);
         if(rc){ return rc;}
