@@ -676,8 +676,8 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       //Build Right interior node
   int spot=0;
   for(offset = midpoint+1; offset<b.info.numkeys; offset++){
-          std::cout<<":::: OFFSET (spot) for building new right interior node = "<<spot<<std::endl;
-      std::cout<<":::: Total Block OFFSET (offset), while rebuilding right interior node"<<offset<<std::endl;
+    std::cout<<":::: OFFSET (spot) for building new right interior node = "<<spot<<std::endl;
+    std::cout<<":::: Total Block OFFSET (offset), while rebuilding right interior node"<<offset<<std::endl;
     rightNode.info.numkeys++;
     //Get values from old node.
     rc = b.GetKey(offset, keySpot);
@@ -750,7 +750,8 @@ else{
       std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
       std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
-      for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
+
+      for(offset2= parentNode.info.numkeys-2; offset2 > offset; offset2-- ){
         std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
             //Grab the old key and pointer
         rc = parentNode.GetKey(offset2, keySpot);
