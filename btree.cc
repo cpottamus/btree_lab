@@ -754,7 +754,7 @@ else{
       std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
           //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
 
-      for(offset2= parentNode.info.numkeys-1; offset2 > offset; offset2-- ){
+      for(offset2= parentNode.info.numkeys-2; offset2 > offset; offset2-- ){
         std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
             //Grab the old key and pointer
         rc = parentNode.GetKey(offset2, keySpot);
@@ -768,9 +768,9 @@ else{
       }
           //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
           //Set our pointers and our new key
-      rc = parentNode.SetPtr(offset2, rightPtr);
+      rc = parentNode.SetPtr(offset2+1, rightPtr);
       if(rc){ return rc;}
-      rc = parentNode.SetPtr(offset2-1,leftPtr);
+      rc = parentNode.SetPtr(offset2,leftPtr);
       if(rc){ return rc;}
       rc = parentNode.SetKey(offset2, splitKey);
       if(rc){ return rc;}
