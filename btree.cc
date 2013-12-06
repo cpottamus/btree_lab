@@ -377,7 +377,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //If there is no error in the update call, end function, declare update successful.
     case ERROR_NOERROR:
     //std::cout << "Key already existed, value updated."<<std::endl;
-    return ERROR_NOERROR;
+    return ERROR_INSERT;
     //If the key doesn't exist (as expected), begin insert functionality
     case ERROR_NONEXISTENT:
       //traverse to find the leaf
