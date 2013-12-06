@@ -451,12 +451,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.info.numkeys++;
         //cout << leafNode.info.numkeys << endl;
         
-      for(int offset =0; offset<leafNode.info.numkeys; offset++){
+      for(SIZE_T offset =0; offset<leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
         if(key < testkey || key == testkey){
         //Once you've found the spot the key needs to go, move all other keys over by 1
-          for(int offset2 = leafNode.info.numkeys-2; offset2 >= offset; offset2--){
+          for(int offset2 = leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
           //Grab the old key and value
             rc = leafNode.GetKey((SIZE_T)offset2, keySpot);
             if (rc) { return rc;}
@@ -470,9 +470,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           }
 
         //assign the new key to offset
-          rc = leafNode.SetKey((SIZE_T)offset, key);
+          rc = leafNode.SetKey(offset, key);
           if (rc) { return rc;}
-          rc = leafNode.SetVal((SIZE_T)offset, value);
+          rc = leafNode.SetVal(offset, value);
           if (rc) { return rc;}
 
           break;
