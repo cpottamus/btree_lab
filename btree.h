@@ -49,6 +49,7 @@ private:
   SIZE_T       superblock_index;
   BTreeNode    superblock;
   unsigned int maxNumKeys;
+    bool initBlock;
 
 protected:
 

@@ -37,7 +37,6 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
   //Calculate maximum number of keys per bllock
   SIZE_T blockSize = buffercache->GetBlockSize();
   maxNumKeys = blockSize/(16);
-
 }
 
 BTreeIndex::BTreeIndex()
@@ -381,27 +380,38 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //If there is no error in the update call, end function, declare update successful.
     case ERROR_NOERROR:
     //std::cout << "Key already existed, value updated."<<std::endl;
-    return ERROR_NOERROR;
+    return ERROR_INSERT;
     //If the key doesn't exist (as expected), begin insert functionality
     case ERROR_NONEXISTENT:
       //traverse to find the leaf
       //Use a stack of pointers to track the path down to the node where the key would go.
-    static bool initBlock= false;
     BTreeNode leafNode;
     BTreeNode rootNode;
     BTreeNode rightLeafNode;
     ERROR_T rc;
     SIZE_T leafPtr;
     SIZE_T rightLeafPtr;
+          
+    SIZE_T rootPtr = superblock.info.rootnode;
+    rootNode.Unserialize(buffercache, rootPtr);
+    initBlock = false;
+    if (rootNode.info.numkeys != 0) {
+        initBlock = true;
+    }
+    
+    rootNode.Serialize(buffercache, rootPtr);
+          
     //If no keys  existant yet...
     if(!initBlock){
       initBlock=true;
-      //Allocate a new block, and set the values to the first key spot.
-      AllocateNode(leafPtr);
-      leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-      leafNode.Serialize(buffercache, leafPtr);
-      rc = leafNode.Unserialize(buffercache, leafPtr);
-      if(rc){ return rc;}
+      
+        //Allocate a new block, and set the values to the first key spot.
+        AllocateNode(leafPtr);
+        leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+        leafNode.Serialize(buffercache, leafPtr);
+        rc = leafNode.Unserialize(buffercache, leafPtr);
+        if(rc){ return rc;}
+        
       leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
@@ -423,7 +433,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       rootNode.SetPtr(1, rightLeafPtr);
       rc = rootNode.Serialize(buffercache, superblock.info.rootnode);
       if(rc){ return rc;}
-    }else{
+    } else{
       std::vector<SIZE_T> pointerPath;
       pointerPath.push_back(superblock.info.rootnode);
       //cout << "Got to LookupLeaf" << endl;
@@ -442,21 +452,28 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //Walk the leaf node
       //Increment the key count for the given node.
       leafNode.info.numkeys++;
-      for(SIZE_T offset =0; offset<leafNode.info.numkeys; offset++){
+        //cout << leafNode.info.numkeys << endl;
+        if (leafNode.info.numkeys == 1) {
+            rc = leafNode.SetKey(0, key);
+            if (rc) { return rc;}
+            rc = leafNode.SetVal(0, value);
+            if (rc) { return rc;}
+        } else {
+      for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
-        if(key < testkey || key == testkey){
+        if(key < testkey || key == testkey) {
         //Once you've found the spot the key needs to go, move all other keys over by 1
-          for(SIZE_T offset2 = leafNode.info.numkeys-1; offset2 >= offset; offset2--){
+          for(int offset2 = (int)leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
           //Grab the old key and value
-            rc = leafNode.GetKey(offset2, keySpot);
+            rc = leafNode.GetKey((SIZE_T)offset2, keySpot);
             if (rc) { return rc;}
-            rc = leafNode.GetVal(offset2, valSpot);
+            rc = leafNode.GetVal((SIZE_T)offset2, valSpot);
             if (rc) { return rc;}
          //move it up by 1
-            rc = leafNode.SetKey(offset2+1, keySpot);
+            rc = leafNode.SetKey((SIZE_T)offset2+1, keySpot);
             if (rc) { return rc;}
-            rc = leafNode.SetVal(offset2+1, valSpot);
+            rc = leafNode.SetVal((SIZE_T)offset2+1, valSpot);
             if (rc) { return rc;}
           }
 
@@ -469,7 +486,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           break;
         }
       }
-
+        }
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
@@ -515,7 +532,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     for(offset=0;offset<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
-      if(key<testkey){
+      if(key < testkey){
             // OK, so we now have the first key that's larger
             // so we ned to recurse on the ptr immediately previous to 
             // this one, if it exists
@@ -541,7 +558,8 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-    return ERROR_NOERROR;
+          pointerPath.push_back(node);
+          return ERROR_NOERROR;
     break;
     default:
         // We can't be looking at anything other than a root, internal, or leaf
