@@ -457,6 +457,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
             rc = leafNode.SetVal(0, value);
             if (rc) { return rc;}
         } else {
+            bool inserted = false;
       for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
@@ -476,6 +477,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           }
 
         //assign the new key to offset
+            inserted = true;
           rc = leafNode.SetKey(offset, key);
           if (rc) { return rc;}
           rc = leafNode.SetVal(offset, value);
@@ -484,6 +486,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           break;
         }
       }
+    if (!inserted) {
+        rc = leafNode.SetKey(leafNode.info.numkeys - 1, key);
+        if (rc) { return rc;}
+        rc = leafNode.SetVal(leafNode.info.numkeys - 1, value);
+        if (rc) { return rc;}
+    }
         }
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
@@ -545,7 +553,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
 
       //if we get here, we need to go to the next pointer, if it exists.
     if(b.info.numkeys>0){
-      rc=b.GetPtr(b.info.numkeys,ptr);
+      rc=b.GetPtr(b.info.numkeys-1,ptr);
       if (rc) { return rc; }
         //If there is no error on finding the appropriate pointer, push it onto our stack. 
       pointerPath.push_back(ptr);
