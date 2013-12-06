@@ -456,6 +456,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
             rc = leafNode.SetVal(0, value);
             if (rc) { return rc;}
         } else {
+            bool inserted = false;
       for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
@@ -475,6 +476,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           }
 
         //assign the new key to offset
+            inserted = true;
           rc = leafNode.SetKey(offset, key);
           if (rc) { return rc;}
           rc = leafNode.SetVal(offset, value);
@@ -483,6 +485,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           break;
         }
       }
+    if (!inserted) {
+        rc = leafNode.SetKey(leafNode.info.numkeys - 1, key);
+        if (rc) { return rc;}
+        rc = leafNode.SetVal(leafNode.info.numkeys - 1, value);
+        if (rc) { return rc;}
+    }
         }
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
