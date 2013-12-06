@@ -10,17 +10,17 @@ system "makedisk testdisk 1024 128 1 1024 1 100 10 .28";
 system "btree_init testdisk 1024 4 4";
 
 
-my @commands = ("btree_insert testdisk 1024 1 val1",
-"btree_insert testdisk 1024 2 val2",
-"btree_insert testdisk 1024 3 val3",
-"btree_insert testdisk 1024 4 val4",
-"btree_insert testdisk 1024 5 val5",
-"btree_insert testdisk 1024 6 val6",
-"btree_insert testdisk 1024 7 val7",
-"btree_insert testdisk 1024 8 val8",
-"btree_insert testdisk 1024 9 val9",
-"btree_insert testdisk 1024 10 vala",
-"btree_insert testdisk 1024 11 valb");
+my @commands = ("btree_insert testdisk 1024 1111 aaaa",
+"btree_insert testdisk 1024 2222 aaaa",
+"btree_insert testdisk 1024 3333 aaaa",
+"btree_insert testdisk 1024 4444 aaaa",
+"btree_insert testdisk 1024 5555 aaaa",
+"btree_insert testdisk 1024 6666 aaaa",
+"btree_insert testdisk 1024 7777 aaaa",
+"btree_insert testdisk 1024 8888 aaaa",
+"btree_insert testdisk 1024 9999 aaaa",
+"btree_insert testdisk 1024 9998 aaaa",
+"btree_insert testdisk 1024 9997 aaaa");
 
 #fisher_yates_shuffle(\@commands);
 
