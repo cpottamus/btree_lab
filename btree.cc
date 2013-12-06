@@ -627,7 +627,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //If A leafNode
   if(b.info.nodetype==BTREE_LEAF_NODE){
   //Build left leaf node, include the splitting key (this is a <= B+ tree)
-    for(offset = 0; (int)offset <= midpoint; offset++){
+    for(offset = 0; (int)offset < midpoint; offset++){
       //std::cout<<":::: OFFSET for building new left leaf node = "<<offset<<std::endl;
       leftNode.info.numkeys++;
 
@@ -644,7 +644,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     }
   //Build right leaf node
     int spot=0;
-    for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+    for(offset = midpoint; offset<b.info.numkeys; offset++){
       //std::cout<<":::: OFFSET (spot) for building new right leaf node = "<<spot<<std::endl;
       //std::cout<<":::: Total Block OFFSET (offset), while rebuilding right leaf node"<<offset<<std::endl;
     //Get values from old node.
@@ -662,7 +662,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
     }
   } else {//if it's an interior node.
       //Build left interior node
-  for(offset = 0; (int)offset <= midpoint; offset++){
+  for(offset = 0; (int)offset < midpoint; offset++){
     //std::cout<<":::: OFFSET for building new left interior node = "<<offset<<std::endl;
     leftNode.info.numkeys++;
         //Get old key and pointers
@@ -677,7 +677,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   }
       //Build Right interior node
   int spot=0;
-  for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+  for(offset = midpoint; offset<b.info.numkeys; offset++){
     //std::cout<<":::: OFFSET (spot) for building new right interior node = "<<spot<<std::endl;
     //std::cout<<":::: Total Block OFFSET (offset), while rebuilding right interior node"<<offset<<std::endl;
     rightNode.info.numkeys++;
