@@ -588,7 +588,6 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   BTreeNode rightNode;
   ERROR_T rc;
   SIZE_T offset;
-  SIZE_T offset2;
     
   int newType;
   //SIZE_T ptr;
@@ -720,16 +719,14 @@ if (b.info.nodetype == BTREE_ROOT_NODE) {
   AllocateNode(newRootPtr);
   newRootNode = BTreeNode(BTREE_ROOT_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
   superblock.info.rootnode = newRootPtr;
+    newRootNode.info.rootnode = newRootPtr;
+    newRootNode.info.numkeys = 1;
+    newRootNode.SetKey(0, splitKey);
+    newRootNode.SetPtr(0, leftPtr);
+    newRootNode.SetPtr(1, rightPtr);
   rc = newRootNode.Serialize(buffercache, newRootPtr);
   if(rc) {return rc;}
-  rc = newRootNode.Unserialize(buffercache, newRootPtr);
-  if(rc) {return rc;}
-  newRootNode.info.numkeys++;
-  newRootNode.SetKey(0, splitKey);
-  newRootNode.SetPtr(0, leftPtr);
-  newRootNode.SetPtr(1, rightPtr);
-  rc = newRootNode.Serialize(buffercache, newRootPtr);
-  if(rc) {return rc;}
+
 }
 else{
 //Find the parent node
