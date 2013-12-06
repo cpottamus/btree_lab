@@ -27,7 +27,7 @@ fisher_yates_shuffle(\@commands);
 foreach my $command(@commands){
 	print "::::::::::::::::~ Insert Command ~::::::::::::::::\n";
 	print $command;
-	print "\n:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n";
+	print "\n::::::::::::::::::::::::::::::::::::::::::::::::::\n";
 	system $command;
 }
 
