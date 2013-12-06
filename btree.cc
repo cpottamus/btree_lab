@@ -242,7 +242,10 @@ ERROR_T BTreeIndex::LookupOrUpdateInternal(const SIZE_T &node,
      if (op==BTREE_OP_LOOKUP) { 
        return b.GetVal(offset,value);
      } else { 
-      return b.SetVal(offset, value);
+      rc =  b.SetVal(offset, value);
+      if(rc) {return rc;}
+      rc = b.Serialize(buffercache, node);
+      return rc;
     }
   }
 }
@@ -885,15 +888,24 @@ ERROR_T BTreeIndex::SanityCheck() const
   //7)Ordered keys
   //9)Superblocks key count is same as actual number of keys (how does this account for duplicate keys?)
 
-  //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
+  //DEFINE FOR SIZE_T and use pointers instead of nodes for use of comparison operators.
+  //std::set<BTreeNode> allTreeNodes;
 
+  //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
+  ERROR_T retCode = SanityWalk(superblock.info.rootnode/*, allTreeNodes*/);
+  
   //TODO :: Check all of freelist to see if there are any duplicate components
+  
+
+
+  if (retCode) { return retCode;}
+  
 
   return ERROR_UNIMPL;
 }
 
 //We'll use this for walking the tree for our sanity check.
-ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
+ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTreeNodes*/) const{
   BTreeNode b;
   ERROR_T rc;
   SIZE_T offset;
@@ -903,6 +915,13 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
   VALUE_T value;
 
   rc = b.Unserialize(buffercache, node);
+
+  //Check if node is already in our BTree
+  // bool is_in = allTreeNodes.find(b) != allTreeNodes.end();
+  // if(is_in) {
+  //   std::cout<<"node "<<b<<" has already been visited by this BTree"<<std::endl;
+  // }
+  // allTreeNodes.insert(b);
 
   if(rc!=ERROR_NOERROR){
     return rc;
@@ -919,7 +938,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
       //Scan through key/ptr pairs
       //and recurse if possible
 
-    //TODO :: Push node onto set, where we can check against other visited nodes.  4, 5. 
+    //TODO :: Push node onto set, where we can check against other visited nodes.  4, 5.
 
     for(offset=0; offset<b.info.numkeys; offset++){
       rc = b.GetKey(offset,testkey);
@@ -931,17 +950,23 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
         if(tempkey < testkey){
           std::cout<<"The keys are not properly sorted!"<<std::endl;
         }
+
       }
 
-      if(key<testkey){
-            // OK, so we now have the first key that's larger
-            // so we ned to recurse on the ptr immediately previous to 
-            // this one, if it exists
         rc=b.GetPtr(offset,ptr);
         if(rc){return rc;}
 
-        return SanityWalk(ptr, key);
-      }
+        return SanityWalk(ptr/*, allTreeNodes*/);
+
+//      if(key<testkey){
+            // OK, so we now have the first key that's larger
+            // so we ned to recurse on the ptr immediately previous to 
+            // this one, if it exists
+        // rc=b.GetPtr(offset,ptr);
+        // if(rc){return rc;}
+
+        // return SanityWalk(ptr, key);
+   //   }
     }
 
     //If we get here, we need to go to the next pointer, if it exists.
@@ -949,9 +974,10 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, const KEY_T  &key){
       rc = b.GetPtr(b.info.numkeys, ptr);
       if(rc) { return rc; }
 
-      return SanityWalk(ptr, key);
+      return SanityWalk(ptr/*, allTreeNodes*/);
     }else{
       //There are no keys at all on this node, so nowhere to go
+      std::cout << "The keys on this interior node are nonexistent."<<std::endl;
       return ERROR_NONEXISTENT;
     }
     break;

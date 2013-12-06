@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "global.h"
 #include "block.h"
@@ -150,7 +151,7 @@ public:
   ERROR_T Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath);
 
 //Walks the tree starting at root node. For our sanity check.
-  ERROR_T SanityWalk(const SIZE_T &node, const KEY_T  &key);
+  ERROR_T SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTreeNodes*/) const;
   
 };
 
