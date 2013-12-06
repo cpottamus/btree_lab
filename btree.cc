@@ -889,14 +889,14 @@ ERROR_T BTreeIndex::SanityCheck() const
   
 
 
-  if (retCode) { return retCode};
+  if (retCode) { return retCode;}
   
 
   return ERROR_UNIMPL;
 }
 
 //We'll use this for walking the tree for our sanity check.
-ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, std::set<BTreeNode> &allTreeNodes){
+ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, std::set<BTreeNode> &allTreeNodes) const{
   BTreeNode b;
   ERROR_T rc;
   SIZE_T offset;
@@ -947,7 +947,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, std::set<BTreeNode> &allTreeN
         rc=b.GetPtr(offset,ptr);
         if(rc){return rc;}
 
-        return SanityWalk(ptr);
+        return SanityWalk(ptr, allTreeNodes);
 
 //      if(key<testkey){
             // OK, so we now have the first key that's larger
@@ -965,7 +965,7 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node, std::set<BTreeNode> &allTreeN
       rc = b.GetPtr(b.info.numkeys, ptr);
       if(rc) { return rc; }
 
-      return SanityWalk(ptr);
+      return SanityWalk(ptr, allTreeNodes);
     }else{
       //There are no keys at all on this node, so nowhere to go
       std::cout << "The keys on this interior node are nonexistent."<<std::endl;
