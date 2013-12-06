@@ -389,27 +389,27 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     ERROR_T rc;
     SIZE_T leafPtr;
     SIZE_T rightLeafPtr;
-          
+
     SIZE_T rootPtr = superblock.info.rootnode;
     rootNode.Unserialize(buffercache, rootPtr);
     initBlock = false;
     if (rootNode.info.numkeys != 0) {
-        initBlock = true;
+      initBlock = true;
     }
     
     rootNode.Serialize(buffercache, rootPtr);
-          
+
     //If no keys  existent yet...
     if(!initBlock){
       initBlock=true;
       
         //Allocate a new block, and set the values to the first key spot.
-        AllocateNode(leafPtr);
-        leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-        leafNode.Serialize(buffercache, leafPtr);
-        rc = leafNode.Unserialize(buffercache, leafPtr);
-        if(rc){ return rc;}
-        
+      AllocateNode(leafPtr);
+      leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+      leafNode.Serialize(buffercache, leafPtr);
+      rc = leafNode.Unserialize(buffercache, leafPtr);
+      if(rc){ return rc;}
+
       leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
@@ -451,48 +451,48 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //Increment the key count for the given node.
       leafNode.info.numkeys++;
         //cout << leafNode.info.numkeys << endl;
-        if (leafNode.info.numkeys == 1) {
-            rc = leafNode.SetKey(0, key);
-            if (rc) { return rc;}
-            rc = leafNode.SetVal(0, value);
-            if (rc) { return rc;}
-        } else {
-            bool inserted = false;
-      for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
-        rc = leafNode.GetKey(offset, testkey);
+      if (leafNode.info.numkeys == 1) {
+        rc = leafNode.SetKey(0, key);
         if (rc) { return rc;}
-        if(key < testkey || key == testkey) {
+        rc = leafNode.SetVal(0, value);
+        if (rc) { return rc;}
+      } else {
+        bool inserted = false;
+        for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
+          rc = leafNode.GetKey(offset, testkey);
+          if (rc) { return rc;}
+          if(key < testkey || key == testkey) {
         //Once you've found the spot the key needs to go, move all other keys over by 1
-          for(int offset2 = (int)leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
+            for(int offset2 = (int)leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
           //Grab the old key and value
-            rc = leafNode.GetKey((SIZE_T)offset2, keySpot);
-            if (rc) { return rc;}
-            rc = leafNode.GetVal((SIZE_T)offset2, valSpot);
-            if (rc) { return rc;}
+              rc = leafNode.GetKey((SIZE_T)offset2, keySpot);
+              if (rc) { return rc;}
+              rc = leafNode.GetVal((SIZE_T)offset2, valSpot);
+              if (rc) { return rc;}
          //move it up by 1
-            rc = leafNode.SetKey((SIZE_T)offset2+1, keySpot);
-            if (rc) { return rc;}
-            rc = leafNode.SetVal((SIZE_T)offset2+1, valSpot);
-            if (rc) { return rc;}
-          }
+              rc = leafNode.SetKey((SIZE_T)offset2+1, keySpot);
+              if (rc) { return rc;}
+              rc = leafNode.SetVal((SIZE_T)offset2+1, valSpot);
+              if (rc) { return rc;}
+            }
 
         //assign the new key to offset
             inserted = true;
-          rc = leafNode.SetKey(offset, key);
-          if (rc) { return rc;}
-          rc = leafNode.SetVal(offset, value);
-          if (rc) { return rc;}
+            rc = leafNode.SetKey(offset, key);
+            if (rc) { return rc;}
+            rc = leafNode.SetVal(offset, value);
+            if (rc) { return rc;}
 
-          break;
+            break;
+          }
+        }
+        if (!inserted) {
+          rc = leafNode.SetKey(leafNode.info.numkeys - 1, key);
+          if (rc) { return rc;}
+          rc = leafNode.SetVal(leafNode.info.numkeys - 1, value);
+          if (rc) { return rc;}
         }
       }
-    if (!inserted) {
-        rc = leafNode.SetKey(leafNode.info.numkeys - 1, key);
-        if (rc) { return rc;}
-        rc = leafNode.SetVal(leafNode.info.numkeys - 1, value);
-        if (rc) { return rc;}
-    }
-        }
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
@@ -564,8 +564,8 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-          pointerPath.push_back(node);
-          return ERROR_NOERROR;
+    pointerPath.push_back(node);
+    return ERROR_NOERROR;
     break;
     default:
         // We can't be looking at anything other than a root, internal, or leaf
@@ -626,7 +626,9 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   if(b.info.nodetype==BTREE_LEAF_NODE){
   //Build left leaf node, include the splitting key (this is a <= B+ tree)
     for(offset = 0; (int)offset <= midpoint; offset++){
-    leftNode.info.numkeys++;
+      std::cout<<":::: OFFSET for building new left leaf node = "<<offset<<std::endl;
+      leftNode.info.numkeys++;
+
     //Get old node values
       rc = b.GetKey(offset, keySpot);
       if (rc) { return rc;}
@@ -641,6 +643,8 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Build right leaf node
     int spot=0;
     for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+      std::cout<<":::: OFFSET (spot) for building new right leaf node = "<<spot<<std::endl;
+      std::cout<<":::: Total Block OFFSET (offset), while rebuilding right leaf node"<<offset<<std::endl;
     //Get values from old node.
       rightNode.info.numkeys++;
       rc = b.GetKey(offset, keySpot);
@@ -657,6 +661,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   } else {//if it's an interior node.
       //Build left interior node
   for(offset = 0; (int)offset <= midpoint; offset++){
+    std::cout<<":::: OFFSET for building new left interior node = "<<offset<<std::endl;
     leftNode.info.numkeys++;
         //Get old key and pointers
     rc = b.GetKey(offset, keySpot);
@@ -671,6 +676,8 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
       //Build Right interior node
   int spot=0;
   for(offset = midpoint+1; offset<b.info.numkeys; offset++){
+          std::cout<<":::: OFFSET (spot) for building new right interior node = "<<spot<<std::endl;
+      std::cout<<":::: Total Block OFFSET (offset), while rebuilding right interior node"<<offset<<std::endl;
     rightNode.info.numkeys++;
     //Get values from old node.
     rc = b.GetKey(offset, keySpot);
@@ -891,9 +898,9 @@ ERROR_T BTreeIndex::SanityCheck() const
 
   //Call Sanity Walk on top of tree using superblock.info.rootnode, etc...
   ERROR_T retCode = SanityWalk(superblock.info.rootnode/*, allTreeNodes*/);
-  
+
   //TODO :: Check all of freelist to see if there are any duplicate components
-  
+
 
 
   if (retCode) { return retCode;}
@@ -904,15 +911,15 @@ ERROR_T BTreeIndex::SanityCheck() const
 
 //We'll use this for walking the tree for our sanity check.
 ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTreeNodes*/) const{
-  BTreeNode b;
-  ERROR_T rc;
-  SIZE_T offset;
-  KEY_T testkey;
-  KEY_T tempkey;
-  SIZE_T ptr;
-  VALUE_T value;
+BTreeNode b;
+ERROR_T rc;
+SIZE_T offset;
+KEY_T testkey;
+KEY_T tempkey;
+SIZE_T ptr;
+VALUE_T value;
 
-  rc = b.Unserialize(buffercache, node);
+rc = b.Unserialize(buffercache, node);
 
   //Check if node is already in our BTree
   // bool is_in = allTreeNodes.find(b) != allTreeNodes.end();
@@ -921,38 +928,38 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTre
   // }
   // allTreeNodes.insert(b);
 
-  if(rc!=ERROR_NOERROR){
-    return rc;
-  }
+if(rc!=ERROR_NOERROR){
+  return rc;
+}
 
       //Check to see if the nodes have proper lengths
-  if(b.info.numkeys>(int)(2*maxNumKeys/3)){
-    std::cout << "Current Node of type "<<b.info.nodetype<<" has "<<b.info.numkeys<<" keys. Which is over the 2/3 threshold of the maximum of "<<maxNumKeys<<" keys."<<std::endl;
-  }
+if(b.info.numkeys>(int)(2*maxNumKeys/3)){
+  std::cout << "Current Node of type "<<b.info.nodetype<<" has "<<b.info.numkeys<<" keys. Which is over the 2/3 threshold of the maximum of "<<maxNumKeys<<" keys."<<std::endl;
+}
 
-  switch(b.info.nodetype){
-    case BTREE_ROOT_NODE:
-    case BTREE_INTERIOR_NODE:
+switch(b.info.nodetype){
+  case BTREE_ROOT_NODE:
+  case BTREE_INTERIOR_NODE:
       //Scan through key/ptr pairs
       //and recurse if possible
 
     //TODO :: Push node onto set, where we can check against other visited nodes.  4, 5.
 
-    for(offset=0; offset<b.info.numkeys; offset++){
-      rc = b.GetKey(offset,testkey);
-      if(rc) {return rc; }
+  for(offset=0; offset<b.info.numkeys; offset++){
+    rc = b.GetKey(offset,testkey);
+    if(rc) {return rc; }
 
       //If keys are not in proper size order
-      if(offset+1<b.info.numkeys){
-        rc = b.GetKey(offset+1, tempkey);
-        if(tempkey < testkey){
-          std::cout<<"The keys are not properly sorted!"<<std::endl;
-        }
-
+    if(offset+1<b.info.numkeys){
+      rc = b.GetKey(offset+1, tempkey);
+      if(tempkey < testkey){
+        std::cout<<"The keys are not properly sorted!"<<std::endl;
       }
 
-        rc=b.GetPtr(offset,ptr);
-        if(rc){return rc;}
+    }
+
+    rc=b.GetPtr(offset,ptr);
+    if(rc){return rc;}
 
         return SanityWalk(ptr/*, allTreeNodes*/);
 
@@ -965,50 +972,50 @@ ERROR_T BTreeIndex::SanityWalk(const SIZE_T &node/*, std::set<BTreeNode> &allTre
 
         // return SanityWalk(ptr, key);
    //   }
-    }
-
-    //If we get here, we need to go to the next pointer, if it exists.
-    if(b.info.numkeys>0){
-      rc = b.GetPtr(b.info.numkeys, ptr);
-      if(rc) { return rc; }
-
-      return SanityWalk(ptr/*, allTreeNodes*/);
-    }else{
-      //There are no keys at all on this node, so nowhere to go
-      std::cout << "The keys on this interior node are nonexistent."<<std::endl;
-      return ERROR_NONEXISTENT;
-    }
-    break;
-    case BTREE_LEAF_NODE:
-    
-    for(offset=0; offset<b.info.numkeys;offset++){
-      rc = b.GetKey(offset, testkey);
-      if(rc) { 
-        std::cout << "Leaf Node is missing key"<<std::endl;
-        return rc;
-      }
-      rc =b.GetVal(offset, value);
-      if(rc){
-        std::cout << "leaf node key is missing associated value"<<std::endl;
-        return rc;
-      }
-
-      //If keys are not in proper size order
-      if(offset+1<b.info.numkeys){
-        rc = b.GetKey(offset+1, tempkey);
-        if(tempkey < testkey){
-          std::cout<<"The keys are not properly sorted!"<<std::endl;
-        }
-      }
-    }
-    break;
-    default:
-
-    return ERROR_INSANE;
-    break;
   }
 
+    //If we get here, we need to go to the next pointer, if it exists.
+  if(b.info.numkeys>0){
+    rc = b.GetPtr(b.info.numkeys, ptr);
+    if(rc) { return rc; }
+
+      return SanityWalk(ptr/*, allTreeNodes*/);
+  }else{
+      //There are no keys at all on this node, so nowhere to go
+    std::cout << "The keys on this interior node are nonexistent."<<std::endl;
+    return ERROR_NONEXISTENT;
+  }
+  break;
+  case BTREE_LEAF_NODE:
+
+  for(offset=0; offset<b.info.numkeys;offset++){
+    rc = b.GetKey(offset, testkey);
+    if(rc) { 
+      std::cout << "Leaf Node is missing key"<<std::endl;
+      return rc;
+    }
+    rc =b.GetVal(offset, value);
+    if(rc){
+      std::cout << "leaf node key is missing associated value"<<std::endl;
+      return rc;
+    }
+
+      //If keys are not in proper size order
+    if(offset+1<b.info.numkeys){
+      rc = b.GetKey(offset+1, tempkey);
+      if(tempkey < testkey){
+        std::cout<<"The keys are not properly sorted!"<<std::endl;
+      }
+    }
+  }
+  break;
+  default:
+
   return ERROR_INSANE;
+  break;
+}
+
+return ERROR_INSANE;
 }
 
 
