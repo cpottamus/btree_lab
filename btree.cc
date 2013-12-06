@@ -392,17 +392,17 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     SIZE_T leafPtr;
     SIZE_T rightLeafPtr;
           
-    //Allocate a new block, and set the values to the first key spot.
-    AllocateNode(leafPtr);
-    leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
-    leafNode.Serialize(buffercache, leafPtr);
-    rc = leafNode.Unserialize(buffercache, leafPtr);
-    if(rc){ return rc;}
-          
     //If no keys  existant yet...
     if(!initBlock){
       initBlock=true;
       
+        //Allocate a new block, and set the values to the first key spot.
+        AllocateNode(leafPtr);
+        leafNode = BTreeNode(BTREE_LEAF_NODE, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
+        leafNode.Serialize(buffercache, leafPtr);
+        rc = leafNode.Unserialize(buffercache, leafPtr);
+        if(rc){ return rc;}
+        
       leafNode.info.numkeys++;
       leafNode.SetKey(0, key);
       leafNode.SetVal(0, value);
@@ -516,7 +516,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     for(offset=0;offset<b.info.numkeys; offset++){
       rc=b.GetKey(offset,testkey);
       if(rc) { return rc; }
-      if(key<testkey){
+      if(key < testkey){
             // OK, so we now have the first key that's larger
             // so we ned to recurse on the ptr immediately previous to 
             // this one, if it exists
@@ -542,7 +542,8 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-    return ERROR_NOERROR;
+          pointerPath.push_back(node);
+          return ERROR_NOERROR;
     break;
     default:
         // We can't be looking at anything other than a root, internal, or leaf
