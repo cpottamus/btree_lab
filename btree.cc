@@ -450,7 +450,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //Increment the key count for the given node.
       leafNode.info.numkeys++;
         //cout << leafNode.info.numkeys << endl;
-        
+        if (leafNode.info.numkeys == 1) {
+            rc = leafNode.SetKey(0, key);
+            if (rc) { return rc;}
+            rc = leafNode.SetVal(0, value);
+            if (rc) { return rc;}
+        } else {
       for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
         rc = leafNode.GetKey(offset, testkey);
         if (rc) { return rc;}
@@ -478,7 +483,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
           break;
         }
       }
-
+        }
      //Re-serialize after the access and write. 
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
