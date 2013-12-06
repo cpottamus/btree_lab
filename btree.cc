@@ -456,16 +456,16 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
         if (rc) { return rc;}
         if(key < testkey || key == testkey){
         //Once you've found the spot the key needs to go, move all other keys over by 1
-          for(SIZE_T offset2 = leafNode.info.numkeys-2; offset2 >= offset; offset2--){
+          for(int offset2 = leafNode.info.numkeys-2; offset2 >= offset; offset2--){
           //Grab the old key and value
-            rc = leafNode.GetKey(offset2, keySpot);
+            rc = leafNode.GetKey((SIZE_T)offset2, keySpot);
             if (rc) { return rc;}
-            rc = leafNode.GetVal(offset2, valSpot);
+            rc = leafNode.GetVal((SIZE_T)offset2, valSpot);
             if (rc) { return rc;}
          //move it up by 1
-            rc = leafNode.SetKey(offset2+1, keySpot);
+            rc = leafNode.SetKey((SIZE_T)offset2+1, keySpot);
             if (rc) { return rc;}
-            rc = leafNode.SetVal(offset2+1, valSpot);
+            rc = leafNode.SetVal((SIZE_T)offset2+1, valSpot);
             if (rc) { return rc;}
           }
 
