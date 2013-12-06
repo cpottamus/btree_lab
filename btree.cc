@@ -498,7 +498,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
         //cout << "Reached rebalance" << endl;
-        rc = Rebalance(leafPtr, pointerPath);
+          SIZE_T parentPtr = pointerPath.back();
+          pointerPath.pop_back();
+        rc = Rebalance(parentPtr, pointerPath);
         //cout << "Finished rebalance" << endl;
       }
     }
