@@ -369,10 +369,10 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
   //cout << "Started insert" << endl;
 
   //======ALGORITHM======
-  VALUE_T val = value;
+  VALUE_T val;
 
   //Lookup and attempt to update key
-  ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_UPDATE, key, val);
+  ERROR_T retCode = LookupOrUpdateInternal(superblock.info.rootnode, BTREE_OP_LOOKUP, key, val);
 
   //cout << "Finished LookupOrUpdateInternal" << endl;
 
