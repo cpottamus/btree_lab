@@ -744,7 +744,7 @@ else{
   parentNode.info.numkeys++;
 
 //find split keys spot in parent (interior) node, insert it and update keys and pointers.
-  for(offset = 0; offset<parentNode.info.numkeys; offset++){
+  for(offset = 0; offset<parentNode.info.numkeys-1; offset++){
     //std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
     rc = parentNode.GetKey(offset, testKey);
     if(rc){ return rc;}
