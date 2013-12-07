@@ -754,6 +754,7 @@ else{
     
     BTreeNode newParentNode = BTreeNode(parentNode.info.nodetype, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
     newParentNode.info.numkeys = parentNode.info.numkeys + 1;
+    newParentNode.info.freelist = parentNode.info.freelist;
     
     bool newKeyInserted = false;
     for (offset = 0; offset < newParentNode.info.numkeys - 1; offset++) {
