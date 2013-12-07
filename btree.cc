@@ -441,6 +441,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafPtr = pointerPath.back();
       std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL SHOEFLY Dont bother me ::: "<<leafPtr<<std::endl;
       std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
+      for(int i =pointerPath.size()-1; i>=0; i--) {
+        std::cout<<"Little sumpin"<<pointerPath.at(i)<<std::endl;
+      }
       pointerPath.pop_back();
       //cout << "LeafPtr:" << leafPtr << endl;
       KEY_T testkey;
@@ -499,9 +502,12 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
         //cout << "Reached rebalance" << endl;
-        std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL MOO ::: "<<leafPtr<<std::endl;
-      std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
           SIZE_T parentPtr = pointerPath.back();
+           std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL MOO ::: "<<parentPtr<<std::endl;
+      std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
+      for(int i =pointerPath.size()-1; i>=0; i--) {
+        std::cout<<"Little sumpin"<<pointerPath.at(i)<<std::endl;
+      }
           pointerPath.pop_back();
         rc = Rebalance(parentPtr, pointerPath);
         //cout << "Finished rebalance" << endl;
@@ -736,6 +742,9 @@ else{
   SIZE_T parentPtr = ptrPath.back();
   std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
       std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
+    for(int i =ptrPath.size()-1; i>=0; i--) {
+        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
+      }
   ptrPath.pop_back();
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
