@@ -750,8 +750,9 @@ else{
   rc = parentNode.Unserialize(buffercache, parentPtr);
   if(rc) {return rc;}
 
-    if (parentNode.info.nodetype == BTREE_ROOT_NODE) {
+    if (parentNode.info.nodetype == BTREE_SUPERBLOCK) {
         AllocateNode(parentPtr);
+        
     }
 //Increment the key count for the given node.
   //parentNode.info.numkeys++;
