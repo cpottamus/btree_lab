@@ -716,7 +716,7 @@ if (rc) { return rc;}
   //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
     
   //  std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
-if (b.info.nodetype == BTREE_ROOT_NODE || ptrPath.size() <= 1) {
+if (b.info.nodetype == BTREE_ROOT_NODE) {
   //std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
