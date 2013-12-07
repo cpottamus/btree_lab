@@ -438,8 +438,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       LookupLeaf(superblock.info.rootnode, key, pointerPath);
       //cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
-      
       leafPtr = pointerPath.back();
+      std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<leafPtr<<std::endl;
+      std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
       pointerPath.pop_back();
       //cout << "LeafPtr:" << leafPtr << endl;
       KEY_T testkey;
@@ -498,6 +499,8 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
         //cout << "Reached rebalance" << endl;
+        std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<leafPtr<<std::endl;
+      std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
           SIZE_T parentPtr = pointerPath.back();
           pointerPath.pop_back();
         rc = Rebalance(parentPtr, pointerPath);
