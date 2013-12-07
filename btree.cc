@@ -733,21 +733,23 @@ std::cout<<"::: We made it here! Root node"<<std::endl;
 else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
-  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
-    for(int i =ptrPath.size()-1; i>=0; i--) {
-        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
-      }
+//  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
+//      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
+//    for(int i =ptrPath.size()-1; i>=0; i--) {
+//        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
+//      }
   ptrPath.pop_back();
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
   if(rc) {return rc;}
 
-
-
+    if (parentNode.info.nodetype == BTREE_SUPERBLOCK) {
+        AllocateNode(parentPtr);
+        
+    }
 //Increment the key count for the given node.
   //parentNode.info.numkeys++;
-
+    
     BTreeNode newParentNode = BTreeNode(parentNode.info.nodetype, superblock.info.keysize, superblock.info.valuesize, superblock.info.blocksize);
     newParentNode.info.numkeys = parentNode.info.numkeys + 1;
     
@@ -995,7 +997,7 @@ switch(b.info.nodetype){
     if(rc) {return rc; }
 
       //If keys are not in proper size order
-    if(offset+1<b.info.numkeys){
+    if(offset+1<b.info.numkeys-1){
       rc = b.GetKey(offset+1, tempkey);
       if(tempkey < testkey){
         std::cout<<"The keys are not properly sorted!"<<std::endl;
@@ -1060,7 +1062,7 @@ switch(b.info.nodetype){
   break;
 }
 
-return ERROR_INSANE;
+return ERROR_NOERROR;
 }
 
 
