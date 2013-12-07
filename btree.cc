@@ -398,9 +398,11 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     }
     
     rootNode.Serialize(buffercache, rootPtr);
-
+    int count = 0;
     //If no keys  existent yet...
     if(!initBlock){
+      count++;
+      std::cout<<"IM IN HERE FOR THE # TIME ::: "<<count<<std::endl;
       initBlock=true;
       
         //Allocate a new block, and set the values to the first key spot.
