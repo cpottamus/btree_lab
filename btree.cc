@@ -715,9 +715,9 @@ if (rc) { return rc;}
   //If we're all the way up at the root, we need to make a new root.
   //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
     
-    std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
+  //  std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
 if (b.info.nodetype == BTREE_ROOT_NODE || ptrPath.size() <= 1) {
-  std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
+  //std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
   AllocateNode(newRootPtr);
@@ -730,13 +730,13 @@ if (b.info.nodetype == BTREE_ROOT_NODE || ptrPath.size() <= 1) {
     newRootNode.SetPtr(1, rightPtr);
   rc = newRootNode.Serialize(buffercache, newRootPtr);
   if(rc) {return rc;}
-std::cout<<"::: We made it here! Root node"<<std::endl;
+//std::cout<<"::: We made it here! Root node"<<std::endl;
 }
 else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
 //  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-      std::cout<<"ALSO THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
+      //std::cout<<"ALSO THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
 //    for(int i =ptrPath.size()-1; i>=0; i--) {
 //        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
 //      }
