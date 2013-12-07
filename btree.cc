@@ -776,12 +776,22 @@ else{
                 
             } else {
                 rc = parentNode.GetKey(offset, keySpot);
-                newParentNode.SetKey(offset, keySpot);
+                if (rc) {return rc;}
+                rc = newParentNode.SetKey(offset, keySpot);
+                if (rc) {return rc;}
                 
                 rc = parentNode.GetPtr(offset, ptrSpot);
-                newParentNode.SetPtr(offset, ptrSpot);
+                if (rc) {return rc;}
+                rc = newParentNode.SetPtr(offset, ptrSpot);
+                if (rc) {return rc;}
             }
         }
+    }
+    if (newKeyInserted == false) {
+        newKeyInserted = true;
+        newParentNode.SetPtr(offset, leftPtr);
+        newParentNode.SetKey(offset, splitKey);
+        newParentNode.SetPtr(offset+1, rightPtr);
     }
     
     newParentNode.Serialize(buffercache, parentPtr);
