@@ -530,7 +530,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
   SIZE_T offset;
   KEY_T testkey;
   SIZE_T ptr;
-  std::cout<<"BUILDING OUR STACK"<<std:endl;
+  std::cout<<"BUILDING OUR STACK"<<std::endl;
   rc = b.Unserialize(buffercache, node);
 
   if(rc!=ERROR_NOERROR){
