@@ -434,6 +434,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       rc = rootNode.Serialize(buffercache, superblock.info.rootnode);
       if(rc){ return rc;}
     } else{
+      std::cout<<"calling lookupleaf"<<std::endl;
       std::vector<SIZE_T> pointerPath;
       pointerPath.push_back(superblock.info.rootnode);
       //cout << "Got to LookupLeaf" << endl;
@@ -529,7 +530,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
   SIZE_T offset;
   KEY_T testkey;
   SIZE_T ptr;
-
+  std::cout<<"BUILDING OUR STACK"<<std:endl;
   rc = b.Unserialize(buffercache, node);
 
   if(rc!=ERROR_NOERROR){
@@ -551,6 +552,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
         rc=b.GetPtr(offset,ptr);
         if (rc) { return rc; }
           //If there is no error on finding the appropriate pointer, push it onto our stack. 
+        std::cout<<"PUSH, left ptr"<<std::endl;
         pointerPath.push_back(ptr);
         //cout << "PointerPath has: " << pointerPath[0] << endl;
         return LookupLeaf(ptr, key, pointerPath);
@@ -562,6 +564,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
       rc=b.GetPtr(b.info.numkeys,ptr);
       if (rc) { return rc; }
         //If there is no error on finding the appropriate pointer, push it onto our stack. 
+      std::cout<<"PUSH, last ptr on node"<<std::endl;
       pointerPath.push_back(ptr);
       return LookupLeaf(ptr, key, pointerPath);
     } else {
@@ -570,6 +573,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
+    std::cout<<"PUSH, leaf node"<<std::endl;
     pointerPath.push_back(node);
     return ERROR_NOERROR;
     break;
@@ -597,7 +601,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}
-  //std::cout<<":::: Allocating new Nodes :::::"<<std::endl;
+  std::cout<<":::: Allocating new Nodes :::::"<<std::endl;
   //Allocate 2 new nodes, fill them from the place you're splitting
   SIZE_T leftPtr;
   SIZE_T rightPtr;
@@ -713,13 +717,9 @@ KEY_T splitKey;
 rc = b.GetKey(midpoint-1, splitKey);
 if (rc) { return rc;}
 
-
-  //If we're all the way up at the root, we need to make a new root.
-  //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
-    
-  //  std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
+    std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
 if (b.info.nodetype == BTREE_ROOT_NODE) {
-  //std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
+  std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
   AllocateNode(newRootPtr);
@@ -732,13 +732,13 @@ if (b.info.nodetype == BTREE_ROOT_NODE) {
     newRootNode.SetPtr(1, rightPtr);
   rc = newRootNode.Serialize(buffercache, newRootPtr);
   if(rc) {return rc;}
-//std::cout<<"::: We made it here! Root node"<<std::endl;
+std::cout<<"::: We made to a succesful new root node"<<std::endl;
 }
 else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
 //  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-      //std::cout<<"ALSO THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
+      std::cout<<" THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
 //    for(int i =ptrPath.size()-1; i>=0; i--) {
 //        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
 //      }
@@ -760,7 +760,7 @@ else{
     bool newKeyInserted = false;
     for (offset = 0; offset < newParentNode.info.numkeys - 1; offset++) {
         rc = parentNode.GetKey(offset, testKey);
-        //    if(rc){ return rc;}
+        if(rc){ return rc;}
         if (newKeyInserted) {
             rc = parentNode.GetKey(offset, keySpot);
             newParentNode.SetKey(offset + 1, keySpot);
@@ -786,46 +786,7 @@ else{
     }
     
     newParentNode.Serialize(buffercache, parentPtr);
-    
-    
-//find split keys spot in parent (interior) node, insert it and update keys and pointers.
-//  for(offset = 0; offset<parentNode.info.numkeys-1; offset++){
-//    //std::cout<<":::: Searching Interior Nodes for splitKey Insertion ::::: offset = "<<offset<<std::endl;
-//    rc = parentNode.GetKey(offset, testKey);
-//    if(rc){ return rc;}
-//    if(splitKey < testKey || splitKey == testKey){ // if testkey > splitkey
-//      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: Number of keys in parent = "<<parentNode.info.numkeys<<std::endl;
-//      //std::cout<<":::: Moving through the parent node for rebalance insertion ::: parent nodetype = "<<parentNode.info.nodetype<<std::endl;
-//          //Once you've found the insertion point for the new key, move all other keys & pointers over by 1
-//      for(offset2= parentNode.info.numkeys-2 ; offset2 >= offset; offset2-- ){
-//        //std::cout<<":::: Found INSERTION POINT, moving spots over :::: = offset"<<offset<<std::endl;
-//            //Grab the old key and pointer
-//        rc = parentNode.GetKey(offset2, keySpot);
-//        if(rc){ return rc;}
-//        rc = parentNode.GetPtr(offset2, ptrSpot);
-//        if(rc){ return rc;}
-//            //Move it up by 1
-//        rc = parentNode.SetKey(offset2+1, keySpot);
-//        if(rc){ return rc;}
-//        rc = parentNode.SetPtr(offset2+2, ptrSpot);
-//      }
-//          //We now have moved every pointer over except for the  1 to the immediate right of where we will be inserting our splitKey
-//          //Set our pointers and our new key
-//      rc = parentNode.SetPtr(offset2+1, rightPtr);
-//      if(rc){ return rc;}
-//      rc = parentNode.SetPtr(offset,leftPtr);
-//      if(rc){ return rc;}
-//      rc = parentNode.SetKey(offset, splitKey);
-//      if(rc){ return rc;}
-//
-//      break;
-//    }
-//  }
-
-
-  //Check the length of the node and call rebalance if necessary
-  //parentNode.Serialize(buffercache, parentPtr);
-
+       
   if((int)newParentNode.info.numkeys > (int)(2*maxNumKeys/3)){
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
