@@ -694,7 +694,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   }
   rc = b.GetPtr(offset, ptrSpot);
   if (rc) { return rc;}
-  rc = rightNode.SetPtr(offset, ptrSpot);
+  rc = rightNode.SetPtr(spot, ptrSpot);
   if (rc) { return rc;}
 }
   //Serialize the new nodes
