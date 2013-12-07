@@ -721,7 +721,7 @@ if (rc) { return rc;}
 
   //If we're all the way up at the root, we need to make a new root.
   //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
-if (b.info.nodetype == BTREE_ROOT_NODE) {
+if (b.info.nodetype == BTREE_ROOT_NODE || ptrPath.size() <= 1) {
   std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
   BTreeNode newRootNode;
