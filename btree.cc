@@ -568,7 +568,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-    //pointerPath.push_back(node);
+    pointerPath.push_back(node);
     return ERROR_NOERROR;
     break;
     default:
