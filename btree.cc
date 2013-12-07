@@ -740,11 +740,11 @@ std::cout<<"::: We made it here! Root node"<<std::endl;
 else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
-  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
-    for(int i =ptrPath.size()-1; i>=0; i--) {
-        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
-      }
+//  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
+//      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
+//    for(int i =ptrPath.size()-1; i>=0; i--) {
+//        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
+//      }
   ptrPath.pop_back();
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
