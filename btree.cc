@@ -1002,7 +1002,7 @@ switch(b.info.nodetype){
     if(rc) {return rc; }
 
       //If keys are not in proper size order
-    if(offset+1<b.info.numkeys){
+    if(offset+1<b.info.numkeys-1){
       rc = b.GetKey(offset+1, tempkey);
       if(tempkey < testkey){
         std::cout<<"The keys are not properly sorted!"<<std::endl;
