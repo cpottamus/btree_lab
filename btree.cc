@@ -951,11 +951,9 @@ ERROR_T BTreeIndex::SanityCheck() const
   //TODO :: Check all of freelist to see if there are any duplicate components
 
 
-
-  if (retCode) { return retCode;}
+return retCode;
   
 
-  return ERROR_UNIMPL;
 }
 
 //We'll use this for walking the tree for our sanity check.
