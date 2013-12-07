@@ -573,8 +573,8 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-    //std::cout<<"PUSH, leaf node"<<std::endl;
-    //pointerPath.push_back(node);
+    std::cout<<"PUSH, leaf node"<<std::endl;
+    pointerPath.push_back(node);
     return ERROR_NOERROR;
     break;
     default:
@@ -596,7 +596,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   BTreeNode rightNode;
   ERROR_T rc;
   SIZE_T offset;
-    
+    std::cout<<"In rebalance"<<std::endl;
   int newType;
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
@@ -633,8 +633,10 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
 
   //If A leafNode
   if(b.info.nodetype==BTREE_LEAF_NODE){
+    std::cout<<"rebalancing leafnode"<<std::endl;
   //Build left leaf node, include the splitting key (this is a <= B+ tree)
     for(offset = 0; (int)offset < midpoint; offset++){
+      std::cout<<"building left leafnode"<<std::endl;
       //std::cout<<":::: OFFSET for building new left leaf node = "<<offset<<std::endl;
       leftNode.info.numkeys++;
 
@@ -652,6 +654,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   //Build right leaf node
     int spot=0;
     for(offset = midpoint; offset<b.info.numkeys; offset++){
+      std::cout<<"building right leafnode"<<std::endl;
       //std::cout<<":::: OFFSET (spot) for building new right leaf node = "<<spot<<std::endl;
       //std::cout<<":::: Total Block OFFSET (offset), while rebuilding right leaf node"<<offset<<std::endl;
     //Get values from old node.
@@ -670,6 +673,7 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   } else {//if it's an interior node.
       //Build left interior node
   for(offset = 0; (int)offset < midpoint; offset++){
+    std::cout<<"rebalancing interior"<<std::endl;
     //std::cout<<":::: OFFSET for building new left interior node = "<<offset<<std::endl;
     leftNode.info.numkeys++;
         //Get old key and pointers
@@ -738,19 +742,17 @@ else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
 //  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-      std::cout<<" THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
+      std::cout<<" This is the size of ptrPath before we pop the parent element off::: "<<ptrPath.size()<<std::endl;
+      std::cout<<" parent Pointer ::: "<<parentPtr<<std::endl;
 //    for(int i =ptrPath.size()-1; i>=0; i--) {
 //        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
 //      }
   ptrPath.pop_back();
+  std::cout<<" parent's parent Pointer ::: "<<ptrPath.back()<<std::endl;
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
   if(rc) {return rc;}
 
-    if (parentNode.info.nodetype == BTREE_SUPERBLOCK) {
-        AllocateNode(parentPtr);
-        
-    }
 //Increment the key count for the given node.
   //parentNode.info.numkeys++;
     
@@ -788,6 +790,7 @@ else{
     newParentNode.Serialize(buffercache, parentPtr);
        
   if((int)newParentNode.info.numkeys > (int)(2*maxNumKeys/3)){
+    std::cout<<" the Pointer we're recursing rebalance on ::: "<<ptrPath.back()<<std::endl;
     rc = Rebalance(parentPtr, ptrPath);
     if(rc){ return rc;}
   }
