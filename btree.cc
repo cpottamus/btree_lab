@@ -439,7 +439,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       //cout << "Finished LookupLeaf" << endl;
     //Get the node from the last pointer (which points to the leaf node that the key belongs on)
       leafPtr = pointerPath.back();
-      std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<leafPtr<<std::endl;
+      std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL SHOEFLY Dont bother me ::: "<<leafPtr<<std::endl;
       std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
       pointerPath.pop_back();
       //cout << "LeafPtr:" << leafPtr << endl;
@@ -499,7 +499,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
         //cout << "Reached rebalance" << endl;
-        std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<leafPtr<<std::endl;
+        std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL MOO ::: "<<leafPtr<<std::endl;
       std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
           SIZE_T parentPtr = pointerPath.back();
           pointerPath.pop_back();
@@ -734,7 +734,7 @@ std::cout<<"::: We made it here! Root node"<<std::endl;
 else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
-  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<parentPtr<<std::endl;
+  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
       std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
   ptrPath.pop_back();
   BTreeNode parentNode;
