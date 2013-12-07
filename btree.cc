@@ -734,7 +734,7 @@ else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
 //  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-//      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
+      std::cout<<"ALSO THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
 //    for(int i =ptrPath.size()-1; i>=0; i--) {
 //        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
 //      }
