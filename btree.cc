@@ -733,9 +733,9 @@ std::cout<<"::: We made it here! Root node"<<std::endl;
 }
 else{
 //Find the parent node
-  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<leafPtr<<std::endl;
-      std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
   SIZE_T parentPtr = ptrPath.back();
+  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL ::: "<<parentPtr<<std::endl;
+      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
   ptrPath.pop_back();
   BTreeNode parentNode;
   rc = parentNode.Unserialize(buffercache, parentPtr);
