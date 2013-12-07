@@ -1067,7 +1067,7 @@ switch(b.info.nodetype){
   break;
 }
 
-return ERROR_INSANE;
+return ERROR_NOERROR;
 }
 
 
