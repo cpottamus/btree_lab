@@ -36,7 +36,7 @@ BTreeIndex::BTreeIndex(SIZE_T keysize,
 
   //Calculate maximum number of keys per bllock
   SIZE_T blockSize = buffercache->GetBlockSize();
-  maxNumKeys = blockSize/(16);
+  maxNumKeys = (blockSize - sizeof(NodeMetadata))/(16);
 }
 
 BTreeIndex::BTreeIndex()
@@ -465,7 +465,7 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
         for(SIZE_T offset =0; offset<(int)leafNode.info.numkeys-1; offset++){
           rc = leafNode.GetKey(offset, testkey);
           if (rc) { return rc;}
-          if(key < testkey || key == testkey) {
+          if(key < testkey) {
         //Once you've found the spot the key needs to go, move all other keys over by 1
             for(int offset2 = (int)leafNode.info.numkeys-2; offset2 >= (int)offset; offset2--){
           //Grab the old key and value
@@ -581,16 +581,6 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
 
 }
 
-std::vector<SIZE_T> BTreeIndex::prunePtrPath(std::vector<SIZE_T> ptrPath) {
-    if (ptrPath.size() > 1) {
-        if (ptrPath.back() == ptrPath.at(ptrPath.size() - 2)) {
-            ptrPath.pop_back();
-            return ptrPath;
-        }
-    }
-    return ptrPath;
-}
-
 //Rebalance takes a path of pointers and a node at the bottom of that path. It will split the node and recursively walk up the parent path
 // guaranteeing the sanity of each parent.
 ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
@@ -602,8 +592,6 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T offset;
     
   int newType;
-    
-    ptrPath = prunePtrPath(ptrPath);
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}

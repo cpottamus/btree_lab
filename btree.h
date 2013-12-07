@@ -50,8 +50,6 @@ private:
   BTreeNode    superblock;
   unsigned int maxNumKeys;
     bool initBlock;
-
-    std::vector<SIZE_T> prunePtrPath(std::vector<SIZE_T> ptrPath);
     
 protected:
 
