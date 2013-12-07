@@ -501,16 +501,9 @@ ERROR_T BTreeIndex::Insert(const KEY_T &key, const VALUE_T &value)
       leafNode.Serialize(buffercache, leafPtr); 
     //check if the node length is over 2/3, and call rebalance if necessary
       if((int)leafNode.info.numkeys > (int)(2*maxNumKeys/3)) {
-        //cout << "Reached rebalance" << endl;
           SIZE_T parentPtr = pointerPath.back();
-      //      std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL MOO ::: "<<parentPtr<<std::endl;
-      // std::cout<<"ALSO THIS ::: "<<pointerPath.size()<<std::endl;
-      // for(int i =pointerPath.size()-1; i>=0; i--) {
-      //   std::cout<<"Little sumpin"<<pointerPath.at(i)<<std::endl;
-      // }
           pointerPath.pop_back();
         rc = Rebalance(parentPtr, pointerPath);
-        //cout << "Finished rebalance" << endl;
       }
     }
 
@@ -721,6 +714,8 @@ if (rc) { return rc;}
 
   //If we're all the way up at the root, we need to make a new root.
   //  std::cout << ":::: NODE TYPE = " << b.info.nodetype << std::endl;
+    
+    std::cout<<"current node nodetype :::: "<<b.info.nodetype<<std::endl;
 if (b.info.nodetype == BTREE_ROOT_NODE || ptrPath.size() <= 1) {
   std::cout<<":::: AT THE TOP, BUILDING A NEW ROOT ::::"<<std::endl;
   SIZE_T newRootPtr;
@@ -741,7 +736,7 @@ else{
 //Find the parent node
   SIZE_T parentPtr = ptrPath.back();
 //  std::cout<<"WE BUILT THIS CITY ON ROCK AND ROLL COW ::: "<<parentPtr<<std::endl;
-//      std::cout<<"ALSO THIS ::: "<<ptrPath.size()<<std::endl;
+      std::cout<<"ALSO THIS  IN OUR REBALANCE::: "<<ptrPath.size()<<std::endl;
 //    for(int i =ptrPath.size()-1; i>=0; i--) {
 //        std::cout<<"Little sumpin"<<ptrPath.at(i)<<std::endl;
 //      }
