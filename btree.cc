@@ -568,7 +568,7 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
     }
     break;
     case BTREE_LEAF_NODE:
-    //pointerPath.push_back(node);
+    pointerPath.push_back(node);
     return ERROR_NOERROR;
     break;
     default:
@@ -579,6 +579,16 @@ ERROR_T BTreeIndex::LookupLeaf(const SIZE_T &node, const KEY_T &key, std::vector
 
   return ERROR_INSANE;
 
+}
+
+std::vector<SIZE_T> BTreeIndex::prunePtrPath(std::vector<SIZE_T> ptrPath) {
+    if (ptrPath.size() > 1) {
+        if (ptrPath.back() == ptrPath.at(ptrPath.size() - 2)) {
+            ptrPath.pop_back();
+            return ptrPath;
+        }
+    }
+    return ptrPath;
 }
 
 //Rebalance takes a path of pointers and a node at the bottom of that path. It will split the node and recursively walk up the parent path
@@ -592,6 +602,8 @@ ERROR_T BTreeIndex::Rebalance(const SIZE_T &node, std::vector<SIZE_T> ptrPath)
   SIZE_T offset;
     
   int newType;
+    
+    ptrPath = prunePtrPath(ptrPath);
   //SIZE_T ptr;
   rc = b.Unserialize(buffercache, node);
   if (rc) { return rc;}

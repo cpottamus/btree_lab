@@ -51,6 +51,8 @@ private:
   unsigned int maxNumKeys;
     bool initBlock;
 
+    std::vector<SIZE_T> BTreeIndex::prunePtrPath(std::vector<SIZE_T> ptrPath);
+    
 protected:
 
   ERROR_T      AllocateNode(SIZE_T &node);
